@@ -1,0 +1,37 @@
+[tool.poetry]
+name = "geojson_validator"
+version = "0.1.0"
+description = "A library to validate GeoJson"
+authors = [
+    "Manuel Martinez <manuel@kingtide.com>",
+    "Ivan Marquez <ivan.marquez@kingtide.com>"
+]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/yourusername/my_library"
+repository = "https://github.com/yourusername/my_library"
+documentation = "https://github.com/yourusername/my_library/wiki"
+packages = [{include = "geojson_validator"}]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+
+[tool.poetry.dependencies]
+python = ">=3.12"
+pandas = ">=2.2.3"
+geopandas = ">=1.0.1"
+python-dotenv = "^1.0.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=8.3.5"
+black = ">=25.1.0"
+pre-commit = "^4.1.0"
+
+[tool.poetry.build]
+generate-setup-file = false
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

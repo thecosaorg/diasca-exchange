@@ -1,0 +1,89 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Central Park",
+        "amenity": "Park",
+        "popupContent": "This is Central Park in New York City",
+        "population": 0,
+        "type": "urban park"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-73.9819, 40.7681],
+          [-73.9583, 40.7681],
+          [-73.9583, 40.8004],
+          [-73.9819, 40.8004],
+          [-73.9819, 40.7681]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Statue of Liberty",
+        "amenity": "Monument",
+        "popupContent": "This is the Statue of Liberty",
+        "height": 93,
+        "type": "national monument"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-74.0445, 40.6892]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Broadway",
+        "amenity": "Theatre District",
+        "popupContent": "Broadway Theatre District",
+        "type": "cultural area"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-73.9896, 40.7484],
+          [-73.9867, 40.7577],
+          [-73.9837, 40.7660],
+          [-73.9821, 40.7698]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "New York City",
+        "population": 8804190,
+        "popupContent": "New York City - The Big Apple",
+        "type": "city"
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [-74.0427, 40.6976],
+              [-73.9248, 40.6976],
+              [-73.9248, 40.8226],
+              [-74.0427, 40.8226],
+              [-74.0427, 40.6976]
+            ]
+          ],
+          [
+            [
+              [-73.9657, 40.5439],
+              [-73.7332, 40.5439],
+              [-73.7332, 40.6506],
+              [-73.9657, 40.6506],
+              [-73.9657, 40.5439]
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

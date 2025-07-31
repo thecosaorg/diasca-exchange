@@ -1,0 +1,54 @@
+#General Python ignores
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+*.swp
+*.swo
+.DS_Store
+.idea/
+.vscode/
+
+#Virtual environments
+venv/
+.env
+.envrc
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+#Poetry-specific
+poetry.lock
+
+#Pre-commit cache
+.pre-commit-config.yaml~
+.pre-commit-cache/
+
+#Black formatter cache
+.mypy_cache/
+black.log
+
+#Flake8 linting cache
+.flake8
+.tox/
+
+#Mypy cache
+.mypy_cache/
+dmypy.json
+dmypy.json.0
+
+#Logs & Debugging
+logs/
+*.log
+debug.log
+
+#MacOS & Linux system files
+*.DS_Store
+*.AppleDouble
+*.LSOverride
+
+#Windows system files
+Thumbs.db
+ehthumbs.db

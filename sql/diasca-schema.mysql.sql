@@ -1,0 +1,400 @@
+CREATE TABLE `Sites` (
+  `id` integer PRIMARY KEY AUTO_INCREMENT,
+  `parent_id` integer,
+  `enterprise_id` integer NOT NULL,
+  `record_id` integer UNIQUE NOT NULL,
+  `name` VARCHAR(100) NOT NULL,
+  `type` ENUM ('plot', 'office', 'factory', 'warehouse', 'processing_facility', 'distribution_center') NOT NULL,
+  `address` TEXT,
+  `altitude` FLOAT,
+  `latitude` DECIMAL(9,6),
+  `longitude` DECIMAL(9,6),
+  `size` DECIMAL(10,4),
+  `is_headquarters` BOOLEAN DEFAULT false,
+  `created_at` TIMESTAMP NOT NULL DEFAULT (NOW()),
+  `updated_at` TIMESTAMP
+);
+
+CREATE TABLE `BatchesLotsSerials` (
+  `id` integer PRIMARY KEY AUTO_INCREMENT,
+  `batch_lot_serial_number` VARCHAR(100) NOT NULL COMMENT 'The actual batch or lot identifier string used by the enterprise, batch, lot, serial -> serialized items',
+  `product_id` integer NOT NULL,
+  `origin_plot_id` integer,
+  `quantity` float NOT NULL COMMENT 'Must be > 0',
+  `unit` VARCHAR(50) NOT NULL,
+  `production_date` date,
+  `expiry_date` date,
+  `country_of_production` varchar(255) COMMENT 'EUDR requirement - ISO 3166-1 alpha-2 country code',
+  `region_of_production` varchar(255) COMMENT 'EUDR requirement',
+  `disposition` VARCHAR(50) COMMENT 'Optional: Current status of the batch, e.g., active, in_progress, quarantined (GS1 CBV terms recommended)',
+  `record_id` integer UNIQUE NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT (NOW()),
+  `updated_at` TIMESTAMP
+);
+
+CREATE TABLE `Observations` (
+  `id` integer PRIMARY KEY AUTO_INCREMENT,
+  `key` ENUM ('certification_status', 'quality_check', 'geo_verification', 'sustainability_score', 'compliance_check', 'risk_assessment') NOT NULL,
+  `data_source_id` integer NOT NULL,
+  `observation` text,
+  `observation_date` date NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT (NOW()),
+  `updated_at` TIMESTAMP
+);
+
+CREATE TABLE `DataSource` (
+  `id` integer PRIMARY KEY AUTO_INCREMENT,
+  `provider` text NOT NULL,
+  `name` text NOT NULL,
+  `description` text,
+  `confidence_level` integer COMMENT 'Scale 1-10, where 10 is highest confidence',
+  `submission_date` date NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT (NOW()),
+  `updated_at` TIMESTAMP
+);
+
+CREATE TABLE `Products` (
+  `id` integer PRIMARY KEY AUTO_INCREMENT,
+  `record_id` integer UNIQUE NOT NULL,
+  `name` VARCHAR(100) NOT NULL,
+  `sku` VARCHAR(100),
+  `gtin` VARCHAR(100) COMMENT 'Global Trade Item Number (GS1 standard) - 8, 12, 13, or 14 digits',
+  `description` TEXT,
+  `category` VARCHAR(100),
+  `created_at` TIMESTAMP NOT NULL DEFAULT (NOW()),
+  `updated_at` TIMESTAMP
+);
+
+CREATE TABLE `Enterprises` (
+  `id` integer PRIMARY KEY AUTO_INCREMENT,
+  `record_id` integer UNIQUE NOT NULL,
+  `name` VARCHAR(100) NOT NULL,
+  `type` VARCHAR(50),
+  `legal_address` TEXT,
+  `tax_id` VARCHAR(100),
+  `gln` VARCHAR(13) COMMENT 'Optional Global Location Number for the enterprise (GS1 standard) - exactly 13 digits',
+  `created_at` TIMESTAMP NOT NULL DEFAULT (NOW()),
+  `updated_at` TIMESTAMP
+);
+
+CREATE TABLE `People` (
+  `id` integer PRIMARY KEY AUTO_INCREMENT,
+  `record_id` integer UNIQUE NOT NULL,
+  `name` VARCHAR(100) NOT NULL,
+  `role` VARCHAR(50),
+  `email` varchar(255) COMMENT 'Should validate email format',
+  `telephone` varchar(255) COMMENT 'Should validate phone format',
+  `created_at` TIMESTAMP NOT NULL DEFAULT (NOW()),
+  `updated_at` TIMESTAMP
+);
+
+CREATE TABLE `EnterprisePeople` (
+  `people_id` integer,
+  `enterprise_id` integer,
+  `created_at` TIMESTAMP NOT NULL DEFAULT (NOW()),
+  `updated_at` TIMESTAMP,
+  PRIMARY KEY (`people_id`, `enterprise_id`)
+);
+
+CREATE TABLE `Events` (
+  `id` integer PRIMARY KEY AUTO_INCREMENT,
+  `event_type` ENUM ('Commissioning', 'Shipping', 'Receiving', 'Loading', 'Unloading', 'Decommissioning', 'Transformation', 'Processing', 'Harvesting', 'Slaughtering', 'PackingAggregation', 'UnpackingDisaggregation', 'Inspection', 'Sampling', 'Quarantining', 'Releasing', 'Observation') NOT NULL,
+  `description` VARCHAR(100) COMMENT 'e.g., Planting, Harvesting, Processing, Shipping (GS1 CBV terms recommended)',
+  `timestamp` timestamp NOT NULL,
+  `enterprise_id` integer NOT NULL,
+  `sites_id` integer NOT NULL,
+  `record_id` integer UNIQUE NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT (NOW()),
+  `updated_at` TIMESTAMP
+);
+
+CREATE TABLE `BatchesEvents` (
+  `id` integer PRIMARY KEY AUTO_INCREMENT,
+  `events_id` integer NOT NULL,
+  `type` ENUM ('input', 'output') NOT NULL,
+  `batch_id` integer NOT NULL,
+  `quantity` integer NOT NULL COMMENT 'Must be > 0',
+  `unit` varchar(50) NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT (NOW()),
+  `updated_at` TIMESTAMP
+);
+
+CREATE TABLE `BusinessTransactions` (
+  `id` INT PRIMARY KEY AUTO_INCREMENT,
+  `record_id` integer UNIQUE NOT NULL,
+  `sales_order_ref` varchar(50),
+  `purchase_order_ref` varchar(50),
+  `seller_enterprise_id` integer NOT NULL,
+  `buyer_enterprise_id` integer NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT (NOW()),
+  `updated_at` timestamp
+);
+
+CREATE TABLE `BusinessTransactionsBatches` (
+  `id` integer PRIMARY KEY,
+  `transaction_id` integer,
+  `batch_id` integer,
+  `transaction_quantity` float,
+  `transaction_unit` VARCHAR(50),
+  `created_at` TIMESTAMP NOT NULL DEFAULT (NOW()),
+  `updated_at` TIMESTAMP
+);
+
+CREATE TABLE `Records` (
+  `id` integer PRIMARY KEY AUTO_INCREMENT,
+  `type` ENUM ('Enterprise', 'Person', 'Site', 'Transaction', 'Event', 'Batch', 'Product', 'Group') NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT (NOW()),
+  `updated_at` TIMESTAMP
+);
+
+CREATE TABLE `Groups` (
+  `id` integer PRIMARY KEY AUTO_INCREMENT,
+  `name` VARCHAR(100) NOT NULL,
+  `record_id` integer UNIQUE NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT (NOW()),
+  `updated_at` TIMESTAMP
+);
+
+CREATE TABLE `RecordsGroups` (
+  `id` integer PRIMARY KEY AUTO_INCREMENT,
+  `group_id` integer NOT NULL,
+  `record_id` integer UNIQUE NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT (NOW()),
+  `updated_at` TIMESTAMP
+);
+
+CREATE TABLE `RecordFieldSource` (
+  `id` integer PRIMARY KEY AUTO_INCREMENT,
+  `record_id` integer UNIQUE NOT NULL,
+  `data_source_id` integer NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT (NOW()),
+  `updated_at` TIMESTAMP
+);
+
+CREATE TABLE `Attributes` (
+  `id` integer PRIMARY KEY AUTO_INCREMENT,
+  `record_id` integer NOT NULL,
+  `category` varchar(255),
+  `key` varchar(255) NOT NULL,
+  `value` text,
+  `attribute_date` date,
+  `created_at` TIMESTAMP NOT NULL DEFAULT (NOW()),
+  `updated_at` TIMESTAMP
+);
+
+CREATE TABLE `Activities` (
+  `id` integer PRIMARY KEY AUTO_INCREMENT,
+  `name` VARCHAR(100) NOT NULL,
+  `description` VARCHAR(200),
+  `budget_quantity` decimal(18,2) COMMENT 'Must be >= 0',
+  `budget_currency` VARCHAR(10) COMMENT 'ISO 4217 currency code',
+  `beneficiary_group_id` integer,
+  `record_id` integer UNIQUE NOT NULL,
+  `start_date` date,
+  `end_date` date COMMENT 'Must be >= start_date',
+  `implementer` integer,
+  `created_at` TIMESTAMP NOT NULL DEFAULT (NOW()),
+  `updated_at` TIMESTAMP
+);
+
+CREATE TABLE `AuditAtrributesObservations` (
+  `id` integer PRIMARY KEY AUTO_INCREMENT,
+  `attribute_id` integer NOT NULL,
+  `observation_id` integer NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT (NOW()),
+  `updated_at` TIMESTAMP
+);
+
+CREATE INDEX `idx_sites_enterprise_headquarters` ON `Sites` (`enterprise_id`, `is_headquarters`);
+
+CREATE INDEX `idx_sites_enterprise_id` ON `Sites` (`enterprise_id`);
+
+CREATE INDEX `idx_sites_record_id` ON `Sites` (`record_id`);
+
+CREATE INDEX `idx_sites_type` ON `Sites` (`type`);
+
+CREATE INDEX `idx_batches_product_id` ON `BatchesLotsSerials` (`product_id`);
+
+CREATE INDEX `idx_batches_origin_plot_id` ON `BatchesLotsSerials` (`origin_plot_id`);
+
+CREATE INDEX `idx_batches_record_id` ON `BatchesLotsSerials` (`record_id`);
+
+CREATE INDEX `idx_batches_product_batch_number` ON `BatchesLotsSerials` (`product_id`, `batch_lot_serial_number`);
+
+CREATE INDEX `idx_batches_production_date` ON `BatchesLotsSerials` (`production_date`);
+
+CREATE INDEX `idx_batches_expiry_date` ON `BatchesLotsSerials` (`expiry_date`);
+
+CREATE INDEX `idx_observations_data_source_id` ON `Observations` (`data_source_id`);
+
+CREATE INDEX `idx_observations_key` ON `Observations` (`key`);
+
+CREATE INDEX `idx_observations_date` ON `Observations` (`observation_date`);
+
+CREATE INDEX `idx_datasource_provider` ON `DataSource` (`provider`);
+
+CREATE INDEX `idx_datasource_confidence` ON `DataSource` (`confidence_level`);
+
+CREATE INDEX `idx_products_record_id` ON `Products` (`record_id`);
+
+CREATE INDEX `idx_products_name` ON `Products` (`name`);
+
+CREATE INDEX `idx_products_sku` ON `Products` (`sku`);
+
+CREATE INDEX `idx_products_gtin` ON `Products` (`gtin`);
+
+CREATE INDEX `idx_products_category` ON `Products` (`category`);
+
+CREATE INDEX `idx_enterprises_record_id` ON `Enterprises` (`record_id`);
+
+CREATE INDEX `idx_enterprises_name` ON `Enterprises` (`name`);
+
+CREATE INDEX `idx_enterprises_type` ON `Enterprises` (`type`);
+
+CREATE INDEX `idx_enterprises_tax_id` ON `Enterprises` (`tax_id`);
+
+CREATE INDEX `idx_enterprises_gln` ON `Enterprises` (`gln`);
+
+CREATE INDEX `idx_people_record_id` ON `People` (`record_id`);
+
+CREATE INDEX `idx_people_name` ON `People` (`name`);
+
+CREATE INDEX `idx_people_email` ON `People` (`email`);
+
+CREATE INDEX `idx_enterprise_people_people_id` ON `EnterprisePeople` (`people_id`);
+
+CREATE INDEX `idx_enterprise_people_enterprise_id` ON `EnterprisePeople` (`enterprise_id`);
+
+CREATE INDEX `idx_events_enterprise_id` ON `Events` (`enterprise_id`);
+
+CREATE INDEX `idx_events_sites_id` ON `Events` (`sites_id`);
+
+CREATE INDEX `idx_events_record_id` ON `Events` (`record_id`);
+
+CREATE INDEX `idx_events_type` ON `Events` (`event_type`);
+
+CREATE INDEX `idx_events_timestamp` ON `Events` (`timestamp`);
+
+CREATE INDEX `idx_batches_events_events_id` ON `BatchesEvents` (`events_id`);
+
+CREATE INDEX `idx_batches_events_batches_id` ON `BatchesEvents` (`batch_id`);
+
+CREATE INDEX `idx_batches_events_type` ON `BatchesEvents` (`type`);
+
+CREATE INDEX `idx_business_transactions_record_id` ON `BusinessTransactions` (`record_id`);
+
+CREATE INDEX `idx_business_transactions_seller_id` ON `BusinessTransactions` (`seller_enterprise_id`);
+
+CREATE INDEX `idx_business_transactions_buyer_id` ON `BusinessTransactions` (`buyer_enterprise_id`);
+
+CREATE INDEX `idx_business_transactions_sales_order` ON `BusinessTransactions` (`sales_order_ref`);
+
+CREATE INDEX `idx_business_transactions_purchase_order` ON `BusinessTransactions` (`purchase_order_ref`);
+
+CREATE INDEX `idx_records_type` ON `Records` (`type`);
+
+CREATE INDEX `idx_groups_record_id` ON `Groups` (`record_id`);
+
+CREATE INDEX `idx_groups_name` ON `Groups` (`name`);
+
+CREATE INDEX `idx_records_groups_group_id` ON `RecordsGroups` (`group_id`);
+
+CREATE INDEX `idx_records_groups_record_id` ON `RecordsGroups` (`record_id`);
+
+CREATE UNIQUE INDEX `idx_records_groups_unique` ON `RecordsGroups` (`group_id`, `record_id`);
+
+CREATE INDEX `idx_record_field_source_record_id` ON `RecordFieldSource` (`record_id`);
+
+CREATE INDEX `idx_record_field_source_data_source_id` ON `RecordFieldSource` (`data_source_id`);
+
+CREATE INDEX `idx_attributes_record_id` ON `Attributes` (`record_id`);
+
+CREATE INDEX `idx_attributes_category` ON `Attributes` (`category`);
+
+CREATE INDEX `idx_attributes_key` ON `Attributes` (`key`);
+
+CREATE INDEX `idx_attributes_record_group_key` ON `Attributes` (`record_id`, `category`, `key`);
+
+CREATE INDEX `idx_activities_beneficiary_group_id` ON `Activities` (`beneficiary_group_id`);
+
+CREATE INDEX `idx_activities_record_id` ON `Activities` (`record_id`);
+
+CREATE INDEX `idx_activities_implementer` ON `Activities` (`implementer`);
+
+CREATE INDEX `idx_activities_start_date` ON `Activities` (`start_date`);
+
+CREATE INDEX `idx_activities_end_date` ON `Activities` (`end_date`);
+
+CREATE INDEX `idx_audit_attributes_observations_attribute_id` ON `AuditAtrributesObservations` (`attribute_id`);
+
+CREATE INDEX `idx_audit_attributes_observations_observation_id` ON `AuditAtrributesObservations` (`observation_id`);
+
+CREATE UNIQUE INDEX `idx_audit_attributes_observations_unique` ON `AuditAtrributesObservations` (`attribute_id`, `observation_id`);
+
+ALTER TABLE `Sites` COMMENT = 'Only one is_headquarters = TRUE per enterprise_id — enforce with a partial unique index in SQL';
+
+ALTER TABLE `Sites` ADD FOREIGN KEY (`parent_id`) REFERENCES `Sites` (`id`);
+
+ALTER TABLE `Sites` ADD FOREIGN KEY (`enterprise_id`) REFERENCES `Enterprises` (`id`);
+
+ALTER TABLE `Sites` ADD FOREIGN KEY (`record_id`) REFERENCES `Records` (`id`);
+
+ALTER TABLE `BatchesLotsSerials` ADD FOREIGN KEY (`product_id`) REFERENCES `Products` (`id`);
+
+ALTER TABLE `BatchesLotsSerials` ADD FOREIGN KEY (`record_id`) REFERENCES `Records` (`id`);
+
+ALTER TABLE `Observations` ADD FOREIGN KEY (`data_source_id`) REFERENCES `DataSource` (`id`);
+
+ALTER TABLE `Products` ADD FOREIGN KEY (`record_id`) REFERENCES `Records` (`id`);
+
+ALTER TABLE `Enterprises` ADD FOREIGN KEY (`record_id`) REFERENCES `Records` (`id`);
+
+ALTER TABLE `People` ADD FOREIGN KEY (`record_id`) REFERENCES `Records` (`id`);
+
+ALTER TABLE `EnterprisePeople` ADD FOREIGN KEY (`people_id`) REFERENCES `People` (`id`);
+
+ALTER TABLE `EnterprisePeople` ADD FOREIGN KEY (`enterprise_id`) REFERENCES `Enterprises` (`id`);
+
+ALTER TABLE `Events` ADD FOREIGN KEY (`enterprise_id`) REFERENCES `Enterprises` (`id`);
+
+ALTER TABLE `Events` ADD FOREIGN KEY (`sites_id`) REFERENCES `Sites` (`id`);
+
+ALTER TABLE `Events` ADD FOREIGN KEY (`record_id`) REFERENCES `Records` (`id`);
+
+ALTER TABLE `BatchesEvents` ADD FOREIGN KEY (`events_id`) REFERENCES `Events` (`id`);
+
+ALTER TABLE `BatchesEvents` ADD FOREIGN KEY (`batch_id`) REFERENCES `BatchesLotsSerials` (`id`);
+
+ALTER TABLE `BusinessTransactions` ADD FOREIGN KEY (`record_id`) REFERENCES `Records` (`id`);
+
+ALTER TABLE `BusinessTransactions` ADD FOREIGN KEY (`seller_enterprise_id`) REFERENCES `Enterprises` (`id`);
+
+ALTER TABLE `BusinessTransactions` ADD FOREIGN KEY (`buyer_enterprise_id`) REFERENCES `Enterprises` (`id`);
+
+ALTER TABLE `BusinessTransactionsBatches` ADD FOREIGN KEY (`transaction_id`) REFERENCES `BusinessTransactions` (`id`);
+
+ALTER TABLE `BusinessTransactionsBatches` ADD FOREIGN KEY (`batch_id`) REFERENCES `BatchesLotsSerials` (`id`);
+
+ALTER TABLE `Groups` ADD FOREIGN KEY (`record_id`) REFERENCES `Records` (`id`);
+
+ALTER TABLE `RecordsGroups` ADD FOREIGN KEY (`group_id`) REFERENCES `Groups` (`id`);
+
+ALTER TABLE `RecordsGroups` ADD FOREIGN KEY (`record_id`) REFERENCES `Records` (`id`);
+
+ALTER TABLE `RecordFieldSource` ADD FOREIGN KEY (`record_id`) REFERENCES `Records` (`id`);
+
+ALTER TABLE `RecordFieldSource` ADD FOREIGN KEY (`data_source_id`) REFERENCES `DataSource` (`id`);
+
+ALTER TABLE `Attributes` ADD FOREIGN KEY (`record_id`) REFERENCES `Records` (`id`);
+
+ALTER TABLE `Activities` ADD FOREIGN KEY (`beneficiary_group_id`) REFERENCES `Groups` (`id`);
+
+ALTER TABLE `Activities` ADD FOREIGN KEY (`record_id`) REFERENCES `Records` (`id`);
+
+ALTER TABLE `Activities` ADD FOREIGN KEY (`implementer`) REFERENCES `Enterprises` (`id`);
+
+ALTER TABLE `AuditAtrributesObservations` ADD FOREIGN KEY (`attribute_id`) REFERENCES `Attributes` (`id`);
+
+ALTER TABLE `AuditAtrributesObservations` ADD FOREIGN KEY (`observation_id`) REFERENCES `Observations` (`id`);
+
+ALTER TABLE `Activities` ADD FOREIGN KEY (`updated_at`) REFERENCES `Activities` (`created_at`);

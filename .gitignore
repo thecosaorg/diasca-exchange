@@ -1,0 +1,68 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+pip-wheel-metadata/
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+*.env
+
+# VSCode
+.vscode/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+out/
+
+# MacOS
+.DS_Store
+
+# Logs
+*.log
+
+# Test & coverage
+htmlcov/
+.coverage
+.tox/
+.nox/
+.coverage.*
+.cache
+pytest_cache/
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+
+# GeoJSON validator build (if any)
+geojson-validator/build/
+geojson-validator/dist/
+
+# Other sensitive or environment-specific files
+*.secret
+*.key

@@ -1,0 +1,379 @@
+Enum site_types {
+  plot
+  office
+  factory
+  warehouse
+  processing_facility
+  distribution_center
+}
+
+Table Sites [headercolor: #79AD51] {
+  id integer [pk, increment]
+  parent_id integer [ref: > Sites.id]
+  enterprise_id integer [ref: > Enterprises.id, not null]
+  record_id integer [ref: - Records.id, unique, not null]
+  name VARCHAR(100) [not null]
+  type site_types [not null]
+  address TEXT
+  altitude FLOAT
+  latitude DECIMAL(9,6)
+  longitude DECIMAL(9,6)
+  size DECIMAL(10,4)
+  is_headquarters BOOLEAN [default: false]
+  created_at TIMESTAMP [default: `NOW()`, not null]
+  updated_at TIMESTAMP
+  Note: 'Only one is_headquarters = TRUE per enterprise_id — enforce with a partial unique index in SQL'
+
+  indexes {
+    (enterprise_id, is_headquarters) [name: 'idx_sites_enterprise_headquarters']
+    enterprise_id [name: 'idx_sites_enterprise_id']
+    record_id [name: 'idx_sites_record_id']
+    type [name: 'idx_sites_type']
+  }
+}
+
+Table BatchesLotsSerials [headercolor: #EB801B] {
+  id integer [pk, increment]
+  batch_lot_serial_number VARCHAR(100) [not null, note: 'The actual batch or lot identifier string used by the enterprise, batch, lot, serial -> serialized items']
+  product_id integer [ref: > Products.id, not null]
+  origin_plot_id integer
+  quantity float [not null, note: 'Must be > 0']
+  unit VARCHAR(50) [not null]
+  production_date date
+  expiry_date date
+  country_of_production varchar [note: 'EUDR requirement - ISO 3166-1 alpha-2 country code']
+  region_of_production varchar [note: 'EUDR requirement']
+  disposition VARCHAR(50) [note: 'Optional: Current status of the batch, e.g., active, in_progress, quarantined (GS1 CBV terms recommended)']
+  record_id integer [ref: - Records.id, unique, not null]
+  created_at TIMESTAMP [default: `NOW()`, not null]
+  updated_at TIMESTAMP
+
+  indexes {
+    product_id [name: 'idx_batches_product_id']
+    origin_plot_id [name: 'idx_batches_origin_plot_id']
+    record_id [name: 'idx_batches_record_id']
+    (product_id, batch_lot_serial_number) [name: 'idx_batches_product_batch_number']
+    production_date [name: 'idx_batches_production_date']
+    expiry_date [name: 'idx_batches_expiry_date']
+  }
+}
+
+Enum observation_keys {
+  certification_status
+  quality_check
+  geo_verification
+  sustainability_score
+  compliance_check
+  risk_assessment
+}
+
+Table Observations [headercolor: #1E69FD] {
+  id integer [pk, increment]
+  key observation_keys [not null]
+  data_source_id integer [ref: > DataSource.id, not null]
+  observation text
+  observation_date date [not null]
+  created_at TIMESTAMP [default: `NOW()`, not null]
+  updated_at TIMESTAMP
+
+  indexes {
+    data_source_id [name: 'idx_observations_data_source_id']
+    key [name: 'idx_observations_key']
+    observation_date [name: 'idx_observations_date']
+  }
+}
+
+Table DataSource [headercolor: #1E69FD] {
+  id integer [pk, increment]
+  provider text [not null]
+  name text [not null]
+  description text
+  confidence_level integer [note: 'Scale 1-10, where 10 is highest confidence']
+  submission_date date [not null]
+  created_at TIMESTAMP [default: `NOW()`, not null]
+  updated_at TIMESTAMP
+
+  indexes {
+    provider [name: 'idx_datasource_provider']
+    confidence_level [name: 'idx_datasource_confidence']
+  }
+}
+
+Table Products [headercolor: #F38833] {
+    id integer [pk, increment]
+    record_id integer [ref: - Records.id, unique, not null]
+    name VARCHAR(100) [not null]
+    sku VARCHAR(100)
+    gtin VARCHAR(100) [note: 'Global Trade Item Number (GS1 standard) - 8, 12, 13, or 14 digits']
+    description TEXT
+    category VARCHAR(100)
+    created_at TIMESTAMP [default: `NOW()`, not null]
+    updated_at TIMESTAMP
+
+    indexes {
+      record_id [name: 'idx_products_record_id']
+      name [name: 'idx_products_name']
+      sku [name: 'idx_products_sku']
+      gtin [name: 'idx_products_gtin']
+      category [name: 'idx_products_category']
+    }
+}
+
+Table Enterprises [headercolor: #79AD51] {
+  id integer [pk, increment]
+  record_id integer [ref: - Records.id, unique, not null]
+  name VARCHAR(100) [not null]
+  type VARCHAR(50)
+  legal_address TEXT
+  tax_id VARCHAR(100)
+  gln VARCHAR(13) [note: 'Optional Global Location Number for the enterprise (GS1 standard) - exactly 13 digits']
+  created_at TIMESTAMP [default: `NOW()`, not null]
+  updated_at TIMESTAMP
+
+  indexes {
+    record_id [name: 'idx_enterprises_record_id']
+    name [name: 'idx_enterprises_name']
+    type [name: 'idx_enterprises_type']
+    tax_id [name: 'idx_enterprises_tax_id']
+    gln [name: 'idx_enterprises_gln']
+  }
+}
+
+Table People [headercolor: #79AD51] {
+    id integer [pk, increment]
+    record_id integer [ref: - Records.id, unique, not null]
+    name VARCHAR(100) [not null]
+    role VARCHAR(50)
+    email varchar [note: 'Should validate email format']
+    telephone varchar [note: 'Should validate phone format']
+    created_at TIMESTAMP [default: `NOW()`, not null]
+    updated_at TIMESTAMP
+
+    indexes {
+      record_id [name: 'idx_people_record_id']
+      name [name: 'idx_people_name']
+      email [name: 'idx_people_email']
+    }
+}
+
+Table EnterprisePeople [headercolor: #79AD51] {
+  people_id integer [pk, ref: > People.id]
+  enterprise_id integer [pk, ref: > Enterprises.id]
+  created_at TIMESTAMP [default: `NOW()`, not null]
+  updated_at TIMESTAMP
+
+  indexes {
+    people_id [name: 'idx_enterprise_people_people_id']
+    enterprise_id [name: 'idx_enterprise_people_enterprise_id']
+  }
+}
+
+Table Events [headercolor: #F38833] {
+  id integer [pk, increment]
+  event_type gs1_event_types [not null]
+  description VARCHAR(100) [note: 'e.g., Planting, Harvesting, Processing, Shipping (GS1 CBV terms recommended)']
+  timestamp timestamp [not null]
+  enterprise_id integer [ref: > Enterprises.id, not null]
+  sites_id integer [ref: > Sites.id, not null]
+  record_id integer [ref: - Records.id, unique, not null]
+  created_at TIMESTAMP [default: `NOW()`, not null]
+  updated_at TIMESTAMP
+
+  indexes {
+    enterprise_id [name: 'idx_events_enterprise_id']
+    sites_id [name: 'idx_events_sites_id']
+    record_id [name: 'idx_events_record_id']
+    event_type [name: 'idx_events_type']
+    timestamp [name: 'idx_events_timestamp']
+  }
+}
+
+Enum gs1_event_types{
+  Commissioning
+  Shipping
+  Receiving
+  Loading
+  Unloading
+  Decommissioning
+  Transformation
+  Processing
+  Harvesting
+  Slaughtering
+  PackingAggregation
+  UnpackingDisaggregation
+  Inspection
+  Sampling
+  Quarantining
+  Releasing
+  Observation
+}
+
+Table BatchesEvents [headercolor: #F38833] {
+  id integer [pk, increment]
+  events_id integer [ref: > Events.id, not null]
+  type input_output [not null]
+  batch_id integer [ref: > BatchesLotsSerials.id, not null]
+  quantity integer [not null, note: 'Must be > 0']
+  unit varchar(50) [not null]
+  created_at TIMESTAMP [default: `NOW()`, not null]
+  updated_at TIMESTAMP
+
+  indexes {
+    events_id [name: 'idx_batches_events_events_id']
+    batch_id [name: 'idx_batches_events_batches_id']
+    type [name: 'idx_batches_events_type']
+  }
+}
+
+Enum input_output{
+  input
+  output
+}
+
+Table BusinessTransactions [headercolor: #79AD51] {
+    id INT [pk, increment]
+    record_id integer [ref: - Records.id, unique, not null]
+    sales_order_ref varchar(50)
+    purchase_order_ref varchar(50)
+    seller_enterprise_id integer [ref: > Enterprises.id, not null]
+    buyer_enterprise_id integer [ref: > Enterprises.id, not null]
+    created_at TIMESTAMP [default: `NOW()`, not null]
+    updated_at timestamp
+
+    indexes {
+      record_id [name: 'idx_business_transactions_record_id']
+      seller_enterprise_id [name: 'idx_business_transactions_seller_id']
+      buyer_enterprise_id [name: 'idx_business_transactions_buyer_id']
+      sales_order_ref [name: 'idx_business_transactions_sales_order']
+      purchase_order_ref [name: 'idx_business_transactions_purchase_order']
+    }
+}
+
+Table BusinessTransactionsBatches [headercolor: #79AD51] {
+  id integer [primary key]
+  transaction_id integer [ref: > BusinessTransactions.id]
+  batch_id integer [ref: > BatchesLotsSerials.id]
+  transaction_quantity float
+  transaction_unit VARCHAR(50)
+  created_at TIMESTAMP [default: `NOW()`,not null]
+  updated_at TIMESTAMP
+}
+
+Table Records [headercolor: #262626] {
+  id integer [pk, increment]
+  type RecordType [not null]
+  created_at TIMESTAMP [default: `NOW()`, not null]
+  updated_at TIMESTAMP
+
+  indexes {
+    type [name: 'idx_records_type']
+  }
+}
+
+Enum RecordType {
+  Enterprise
+  Person
+  Site
+  Transaction
+  Event
+  Batch
+  Product
+  Group
+}
+
+Table Groups [headercolor: #6724BB] {
+  id integer [pk, increment]
+  name VARCHAR(100) [not null]
+  record_id integer [ref: - Records.id, unique, not null]
+  created_at TIMESTAMP [default: `NOW()`, not null]
+  updated_at TIMESTAMP
+
+  indexes {
+    record_id [name: 'idx_groups_record_id']
+    name [name: 'idx_groups_name']
+  }
+}
+
+Table RecordsGroups [headercolor: #6724BB] {
+  id integer [pk, increment]
+  group_id integer [ref: > Groups.id, not null]
+  record_id integer [ref: - Records.id, unique, not null]
+  created_at TIMESTAMP [default: `NOW()`, not null]
+  updated_at TIMESTAMP
+
+  indexes {
+    group_id [name: 'idx_records_groups_group_id']
+    record_id [name: 'idx_records_groups_record_id']
+    (group_id, record_id) [unique, name: 'idx_records_groups_unique']
+  }
+}
+
+Table RecordFieldSource [headercolor: #1E69FD] {
+  id integer [pk, increment]
+  record_id integer [ref: - Records.id, unique, not null]
+  data_source_id integer [ref: > DataSource.id, not null]
+  created_at TIMESTAMP [default: `NOW()`, not null]
+  updated_at TIMESTAMP
+
+  indexes {
+    record_id [name: 'idx_record_field_source_record_id']
+    data_source_id [name: 'idx_record_field_source_data_source_id']
+  }
+}
+
+Table Attributes [headercolor: #1E69FD] {
+  id integer [pk, increment]
+  record_id integer [ref: - Records.id, not null]
+  category varchar
+  key varchar [not null]
+  value text
+  attribute_date date
+  created_at TIMESTAMP [default: `NOW()`, not null]
+  updated_at TIMESTAMP
+
+  indexes {
+    record_id [name: 'idx_attributes_record_id']
+    category [name: 'idx_attributes_category']
+    key [name: 'idx_attributes_key']
+    (record_id, category, key) [name: 'idx_attributes_record_group_key']
+  }
+}
+
+Table Activities [headercolor: #6724BB] {
+  id integer [pk, increment]
+  name VARCHAR(100) [not null]
+  description VARCHAR(200)
+  budget_quantity decimal(18,2) [note: 'Must be >= 0']
+  budget_currency VARCHAR(10) [note: 'ISO 4217 currency code']
+  beneficiary_group_id integer [ref: > Groups.id]
+  record_id integer [ref: - Records.id, unique, not null]
+  start_date date
+  end_date date [note: 'Must be >= start_date']
+  implementer integer [ref: > Enterprises.id]
+  created_at TIMESTAMP [default: `NOW()`, not null]
+  updated_at TIMESTAMP
+
+  indexes {
+    beneficiary_group_id [name: 'idx_activities_beneficiary_group_id']
+    record_id [name: 'idx_activities_record_id']
+    implementer [name: 'idx_activities_implementer']
+    start_date [name: 'idx_activities_start_date']
+    end_date [name: 'idx_activities_end_date']
+  }
+}
+
+Table AuditAtrributesObservations [headercolor: #1E69FD] {
+  id integer [pk, increment]
+  attribute_id integer [ref: > Attributes.id, not null]
+  observation_id integer [ref: > Observations.id, not null]
+  created_at TIMESTAMP [default: `NOW()`, not null]
+  updated_at TIMESTAMP
+
+  indexes {
+    attribute_id [name: 'idx_audit_attributes_observations_attribute_id']
+    observation_id [name: 'idx_audit_attributes_observations_observation_id']
+    (attribute_id, observation_id) [unique, name: 'idx_audit_attributes_observations_unique']
+  }
+}
+
+Ref: "Activities"."created_at" < "Activities"."updated_at"
