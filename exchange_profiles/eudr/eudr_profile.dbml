@@ -1,0 +1,7 @@
+// EUDR Exchange Profile - DBML Subset
+// Status: PLACEHOLDER - In Development
+//
+// This DBML defines the subset of the Semantic Core
+// required for EUDR compliance.
+
+// TODO: Define EUDR-specific subset of semantic core tables

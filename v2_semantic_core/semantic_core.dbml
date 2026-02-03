@@ -1,0 +1,25 @@
+// DIASCA Semantic Core V2
+// Status: PLACEHOLDER - In Development
+//
+// This DBML will define the minimal 6-concept semantic core:
+// - Site
+// - Actor
+// - Relationship
+// - Transaction
+// - Claim
+// - Evidence
+
+Project diasca_semantic_core {
+  database_type: 'PostgreSQL'
+  Note: '''
+    # DIASCA Semantic Core V2
+    
+    Minimal data model for agricultural supply chain interoperability.
+    
+    ## Philosophy
+    Interoperability does not require a big data model.
+    It requires a small shared semantic core and clear exchange profiles.
+  '''
+}
+
+// TODO: Define tables based on semantic_core.md

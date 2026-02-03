@@ -97,21 +97,23 @@ The repository is organized as follows:
     DIASCA data model Layman's terms - 20250731.pdf  # Visual overview
 
 /v2_semantic_core           # Minimal semantic core (in development)
-    semantic_core.md        # Documentation (planned)
-    semantic_core.dbml      # DBML source (planned)
-    semantic_core.sql       # SQL DDL (planned)
+    semantic_core.md        # Documentation
+    semantic_core.dbml      # DBML source
+    semantic_core.sql       # SQL DDL
 
 /exchange_profiles          # Use-case specific data profiles
     /eudr                   # EU Deforestation Regulation
-    /compliance             # Compliance & remediation
-    /metrics                # Sustainability metrics
+        eudr_profile.md
+        eudr_profile.dbml
+    /compliance             # Compliance & remediation (placeholder)
+    /metrics                # Sustainability metrics (placeholder)
 
 /diagrams                   # Visual documentation
 
 /docs                       # Additional documentation
-    lessons_from_recent_implementations.md (planned)
-    design_principles.md (planned)
-    open_questions.md (planned)
+    lessons_from_recent_implementations.md
+    design_principles.md
+    open_questions.md
 
 /tools
     /geojson-validator      # Python library for GeoJSON validation
