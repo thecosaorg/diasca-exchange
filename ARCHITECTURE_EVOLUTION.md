@@ -80,86 +80,60 @@ This positions DIASCA not as a product, but as **infrastructure**—a set of agr
 
 ## Current Repository Structure
 
-The repository currently contains the **V1 original model** in a flat structure:
+The repository is organized as follows:
 
 ```
-/dbml
-    diasca-model.dbml       # DBML source for ER diagram
-    diasca-model.png        # Rendered ER diagram
+/v1_original_model          # Original comprehensive DIASCA model
+    /dbml
+        diasca-model.dbml   # DBML source for ER diagram
+        diasca-model.png    # Rendered ER diagram
+    /sql
+        diasca-schema.mysql.sql   # MySQL DDL
+        diasca-schema.psql.sql    # PostgreSQL DDL
+    /spec
+        er-spec.md          # Full Entity-Relationship Model Documentation
+    /podcast
+        diasca-data-model-explained.mp3   # Audio walkthrough
+    DIASCA data model Layman's terms - 20250731.pdf  # Visual overview
 
-/sql
-    diasca-schema.mysql.sql # MySQL DDL
-    diasca-schema.psql.sql  # PostgreSQL DDL
+/v2_semantic_core           # Minimal semantic core (in development)
+    semantic_core.md        # Documentation (planned)
+    semantic_core.dbml      # DBML source (planned)
+    semantic_core.sql       # SQL DDL (planned)
 
-/spec
-    er-spec.md              # Full Entity-Relationship Model Documentation
-                            # (tables, columns, relationships, business logic)
+/exchange_profiles          # Use-case specific data profiles
+    /eudr                   # EU Deforestation Regulation
+    /compliance             # Compliance & remediation
+    /metrics                # Sustainability metrics
 
-/geojson-validator          # Python library for GeoJSON validation
-    /src                    # Source code
-    /docs                   # Documentation
-    /tests                  # Test suite
-    pyproject.toml          # Poetry configuration
-    README.md               # Development guide
+/diagrams                   # Visual documentation
 
-/podcast
-    diasca-data-model-explained.mp3   # Audio walkthrough of the data model
+/docs                       # Additional documentation
+    lessons_from_recent_implementations.md (planned)
+    design_principles.md (planned)
+    open_questions.md (planned)
+
+/tools
+    /geojson-validator      # Python library for GeoJSON validation
+        /src
+        /docs
+        /tests
 
 # Root files
-ARCHITECTURE_EVOLUTION.md             # This document
-DIASCA data model Layman's terms - 20250731.pdf  # Visual overview (PDF)
-README.md                             # Repository overview and getting started
-LICENSE                               # MIT License
+ARCHITECTURE_EVOLUTION.md   # This document
+README.md                   # Repository overview
+LICENSE                     # MIT License
 ```
 
 ### Key Components
 
 | Component | Description |
 |-----------|-------------|
-| **DBML** | Database Markup Language source and diagram |
-| **SQL** | Production-ready DDL for MySQL and PostgreSQL |
-| **ER Spec** | Comprehensive 774-line specification with GS1/EUDR alignment |
+| **V1 Model** | Complete DIASCA model with DBML, SQL, spec, and podcast |
+| **V2 Semantic Core** | Minimal 6-concept core (in development) |
+| **Exchange Profiles** | EUDR, compliance, metrics profiles (planned) |
 | **GeoJSON Validator** | Python library for validating plot geometries |
-| **Podcast** | Audio explanation of the data model for stakeholders |
 | **PDF Overview** | Visual "layman's terms" document for non-technical audiences |
-
----
-
-## Future Proposed Structure (V2)
-
-As the model evolves, the repository should transition to:
-
-```
-/v1_original_model
-    /dbml
-    /sql
-    /spec
-    /podcast
-
-/v2_semantic_core
-    semantic_core.md
-    semantic_core.dbml
-    semantic_core.sql
-
-/exchange_profiles
-    /eudr
-        eudr_profile.md
-        eudr_profile.dbml
-    /compliance
-    /metrics
-
-/diagrams
-    semantic_core.png
-    eudr_exchange.png
-
-/docs
-    lessons_from_recent_implementations.md
-    design_principles.md
-    open_questions.md
-
-/tools
-    /geojson-validator      # Relocated from root
-```
 
 ---
 
