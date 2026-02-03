@@ -1,167 +1,97 @@
-# Library to Validate GeoJSON Files
+# DIASCA GeoJSON Validator
 
-This Python library provides tools to validate GeoJSON files, ensuring that the geometries are correctly formatted and compliant with spatial standards.
+> Python library for validating GeoJSON plot geometries in agricultural supply chains.
 
----
+Part of the [DIASCA](../../README.md) data exchange toolkit.
 
-## 📥 Download & Installation
+## 🎯 Purpose
 
-### a) Clone the Repository
+This library validates GeoJSON files to ensure plot geometries are correctly formatted and compliant with spatial standards required for:
 
-```sh
-git clone https://github.com/KingTide/diasca-library.git
-cd diasca-library
-```
+- **EUDR compliance** – Validate plot polygons for deforestation-free sourcing
+- **Traceability** – Ensure site geometries meet data quality requirements
+- **Data exchange** – Validate GeoJSON before import/export
 
-### b) Install Poetry (if not installed)
+## 📦 Installation
 
-```sh
-curl -sSL https://install.python-poetry.org | python3 -
-```
-
-### c) Install Dependencies
-
-```sh
+```bash
+cd tools/geojson-validator
 poetry install
 ```
 
----
+## 🚀 Quick Start
 
-## 🛠 Development
+```python
+from src.geojson_validator import GeoJsonValidator
 
-### 1️⃣ Activate the Virtual Environment
+# From a dictionary
+validator = GeoJsonValidator({"type": "Point", "coordinates": [0, 0]})
 
-Poetry 2.0.0 and later versions no longer include the `shell` command by default. Choose one of the following options:
+# From a file
+validator = GeoJsonValidator.from_filepath("path/to/plot.geojson")
 
-#### **Option 1: Use the recommended `env activate` command**
+# From a string
+validator = GeoJsonValidator.from_string('{"type": "Polygon", ...}')
 
-```sh
-poetry env use python
-poetry env activate
+# Check validity
+if validator.is_valid():
+    print("Valid GeoJSON!")
 ```
 
-To deactivate:
+## 🧪 Running Tests
 
-```sh
-deactivate
-```
-
-#### **Option 2: Install the Poetry Shell Plugin (to use `poetry shell`)**
-
-```sh
-poetry self add "poetry-plugin-shell"
-```
-
-Then, activate the environment using:
-
-```sh
-poetry shell
-```
-
----
-
-### 2️⃣ Setting Up Pre-commit Hooks
-
-To ensure **code quality**, we use pre-commit hooks that run automatically before each commit.
-
-#### **Step 1: Install `pre-commit`**
-```sh
-poetry add --group dev pre-commit
-```
-
-#### **Step 2: Install Pre-commit Hooks**
-```sh
-poetry run pre-commit install
-```
-
-#### **Step 3: Manually Run Pre-commit Hooks**
-To test the hooks on all files:
-
-```sh
-poetry run pre-commit run --all-files
-```
-
----
-
-### 3️⃣ Running Tests
-
-If `pytest` is not found, ensure it is installed inside the Poetry environment:
-
-```sh
-poetry add --group dev pytest
-```
-
-Then, run tests using:
-
-```sh
+```bash
 poetry run pytest
 ```
 
----
+## 🛠 Development
 
-## 📜 Git Workflow
+### Setup
 
-### ✅ Create a feature branch:
-```sh
-git checkout -b feature/new_feature
+```bash
+# Install dependencies
+poetry install
+
+# Install pre-commit hooks
+poetry run pre-commit install
 ```
 
-### ✅ Ensure formatting:
-```sh
-pre-commit run --all-files
+### Code Quality
+
+```bash
+# Run linting and formatting
+poetry run pre-commit run --all-files
+
+# Run tests
+poetry run pytest
 ```
 
-### ✅ Run tests before committing:
-```sh
-pytest
-```
+### Adding Dependencies
 
-### ✅ Commit the changes:
-```sh
-git commit -m "Add new feature"
-```
-
-### ✅ Push changes and open a PR:
-```sh
-git push origin feature/new_feature
-```
-
----
-
-## 🔧 Additional Commands
-
-### ➕ Add a New Dependency
-
-```sh
+```bash
+# Production dependency
 poetry add package_name
-```
 
-### ➕ Add a Development Dependency
-
-```sh
+# Development dependency
 poetry add --group dev package_name
 ```
 
-### ▶️ Run Scripts Inside the Virtual Environment
+## 📋 API Reference
 
-```sh
-poetry run python script.py
-```
+### `GeoJsonValidator`
 
-### ℹ️ Check the Virtual Environment Info
-
-```sh
-poetry env info
-```
-
-### ❌ Deactivate the Virtual Environment
-
-```sh
-deactivate
-```
-
----
+| Method | Description |
+|--------|-------------|
+| `__init__(geojson_obj)` | Initialize with a GeoJSON dict |
+| `from_string(geojson_str)` | Create from a JSON string |
+| `from_filepath(filepath)` | Create from a file path |
+| `validate()` | Validate the GeoJSON structure |
+| `is_valid()` | Returns `True` if valid, `False` otherwise |
 
 ## 📄 License
 
-This project is licensed under the **MIT License**. See the `LICENSE` file for details.
+MIT License – See [LICENSE](../../LICENSE)
+
+---
+
+_Part of the DIASCA project, maintained by [COSA](https://thecosa.org)_
