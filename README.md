@@ -47,18 +47,25 @@ DIASCA is a **Minimum Viable DPI** (Digital Public Infrastructure) that enables:
 
 ### View the Data Model
 
+#### V1 (Original Comprehensive Model)
+
 1. **ER Specification**: Open [`v1_original_model/spec/er-spec.md`](v1_original_model/spec/er-spec.md)
 2. **Visual Diagram**: View [`v1_original_model/dbml/diasca-model.png`](v1_original_model/dbml/diasca-model.png)
 3. **Listen**: Play [`v1_original_model/podcast/diasca-data-model-explained.mp3`](v1_original_model/podcast/diasca-data-model-explained.mp3)
 
+#### V2 (Minimal Semantic Core)
+
+1. **Specification**: Open [`v2_semantic_core/semantic_core.md`](v2_semantic_core/semantic_core.md)
+2. **DBML Schema**: View [`v2_semantic_core/semantic_core.dbml`](v2_semantic_core/semantic_core.dbml)
+
 ### Apply the Schema
 
 ```bash
-# PostgreSQL
-psql -U user -d dbname -f v1_original_model/sql/diasca-schema.psql.sql
+# V2 Semantic Core (Recommended)
+psql -U user -d dbname -f v2_semantic_core/semantic_core.sql
 
-# MySQL
-mysql -u user -p < v1_original_model/sql/diasca-schema.mysql.sql
+# V1 Original Model
+psql -U user -d dbname -f v1_original_model/sql/diasca-schema.psql.sql
 ```
 
 ### Use the GeoJSON Validator
@@ -93,7 +100,8 @@ Evidence ───── supports ───── Claim
 ## 📖 Documentation
 
 - [Architecture Evolution](ARCHITECTURE_EVOLUTION.md) – Project vision and roadmap
-- [ER Specification](v1_original_model/spec/er-spec.md) – Complete V1 data model
+- [V2 Semantic Core](v2_semantic_core/semantic_core.md) – Minimal core implementation
+- [V1 ER Specification](v1_original_model/spec/er-spec.md) – Complete V1 data model
 - [GeoJSON Validator](tools/geojson-validator/README.md) – Tool documentation
 - [Visual Overview (PDF)](v1_original_model/DIASCA%20data%20model%20Layman's%20terms%20-%2020250731.pdf) – Non-technical overview
 
