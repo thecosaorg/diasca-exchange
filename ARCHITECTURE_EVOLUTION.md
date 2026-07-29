@@ -98,9 +98,15 @@ The repository is organized as follows:
 
 /docs                       # Additional documentation
     dpi_architecture_roadmap.md # DPI Architecture, API Contracts & OAuth Scopes
+    integration_mapping_guide.md # Integration mapping workflows
     lessons_from_recent_implementations.md
     design_principles.md
     open_questions.md
+
+/diasca-node                # Reference Implementation Scaffold
+    app/                    # FastAPI monolith (CRUD + Domain Operations)
+    alembic/                # Database migrations
+    openapi.yaml            # OpenAPI 3.1 Contract
 
 /tools
     /geojson-validator      # Python library for GeoJSON validation
@@ -123,6 +129,8 @@ LICENSE                     # MIT License
 | **V2 Semantic Core** | Minimal 9-concept core: Person, Enterprise, Site, Relationship, Lot, Transaction, LotLineage, Claim, Evidence |
 | **JSON Schemas** | Formal Draft 2020-12 JSON Schema definitions for all 9 core entities |
 | **DPI Roadmap & Architecture** | Blueprint covering DPI features, fine-grained OAuth scopes, hybrid API design, provenance, & Cloud Run |
+| **Integration Mapping Guide** | Workflows for syncing internal systems with the DIASCA network |
+| **DIASCA Node Reference Implementation** | FastAPI & SQLModel scaffold with OpenAPI contract |
 | **Exchange Profiles** | Practical profiles for EUDR Article 9, compliance remediation, and sustainability metrics |
 | **GeoJSON Validator** | Python library for validating plot geometries |
 | **V1 Model** | Archive — original comprehensive model (reference only) |

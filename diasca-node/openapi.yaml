@@ -1,0 +1,309 @@
+openapi: 3.1.0
+info:
+  title: DIASCA DPI Node API
+  description: |
+    API Contract for the Data Interoperability for Agricultural Supply Chain Actors (DIASCA) Digital Public Infrastructure.
+    This API follows a Hybrid Design: standard RESTful CRUD for resource retrieval/creation, combined with Domain Operations (RPC-style) for state transitions and business actions.
+  version: 1.0.0
+  contact:
+    name: DIASCA Protocol Team
+    email: api@diasca.org
+
+servers:
+  - url: https://api.diasca.org
+    description: Production DPI Node
+  - url: https://staging-api.diasca.org
+    description: Sandbox/Staging Node
+  - url: http://localhost:8080
+    description: Local Development
+
+security:
+  - OAuth2: []
+
+paths:
+  /v2/people:
+    get:
+      tags:
+        - People
+      summary: List People
+      security:
+        - OAuth2: [people:read]
+      responses:
+        '200':
+          description: A paginated list of people
+    post:
+      tags:
+        - People
+      summary: Register a new Person
+      security:
+        - OAuth2: [people:create]
+      responses:
+        '201':
+          description: Person created successfully
+
+  /v2/people/{person_id}:
+    get:
+      tags:
+        - People
+      summary: Get Person by ID
+      security:
+        - OAuth2: [people:read]
+      parameters:
+        - name: person_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Person profile
+
+  /v2/people/{person_id}:linkEnterprise:
+    post:
+      tags:
+        - People Domain Operations
+      summary: Link a person to an enterprise (e.g. employment or cooperative membership)
+      security:
+        - OAuth2: [people:link_enterprise]
+      parameters:
+        - name: person_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                enterprise_id:
+                  type: string
+                  format: uuid
+                role:
+                  type: string
+      responses:
+        '200':
+          description: Link established
+
+  /v2/sites:
+    get:
+      tags:
+        - Sites
+      summary: List Sites
+      security:
+        - OAuth2: [sites:read]
+      responses:
+        '200':
+          description: A paginated list of sites
+    post:
+      tags:
+        - Sites
+      summary: Register a new Site (Plot, Farm, Factory)
+      security:
+        - OAuth2: [sites:create]
+      responses:
+        '201':
+          description: Site created successfully
+
+  /v2/sites/{site_id}:
+    get:
+      tags:
+        - Sites
+      summary: Get Site by ID
+      security:
+        - OAuth2: [sites:read]
+      parameters:
+        - name: site_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Site metadata and location
+
+  /v2/sites/{site_id}:attachGeoId:
+    post:
+      tags:
+        - Site Domain Operations
+      summary: Attach an external identifier (e.g. FAO GeoID) without modifying ownership
+      security:
+        - OAuth2: [sites:attach_external_identifier]
+      parameters:
+        - name: site_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttachGeoIdRequest'
+      responses:
+        '200':
+          description: Identifier attached
+
+  /v2/sites/{site_id}:updateGeometry:
+    post:
+      tags:
+        - Site Domain Operations
+      summary: Submit a revised GeoJSON polygon boundary
+      security:
+        - OAuth2: [sites:update_geometry]
+      parameters:
+        - name: site_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGeometryRequest'
+      responses:
+        '200':
+          description: Geometry updated and validated
+
+  /v2/lots:
+    post:
+      tags:
+        - Lots
+      summary: Create a traceable product lot
+      security:
+        - OAuth2: [lots:create]
+      responses:
+        '201':
+          description: Lot created
+
+  /v2/lots/{lot_id}:split:
+    post:
+      tags:
+        - Lot Domain Operations
+      summary: Divide one input lot into multiple output lots
+      security:
+        - OAuth2: [lots:transform]
+      parameters:
+        - name: lot_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SplitLotRequest'
+      responses:
+        '200':
+          description: Split successful, LotLineage generated
+
+  /v2/claims:
+    post:
+      tags:
+        - Claims
+      summary: Submit a new claim (deforestation, organic, yield, etc.)
+      security:
+        - OAuth2: [claims:create]
+      responses:
+        '201':
+          description: Claim submitted
+
+  /v2/claims/{claim_id}:verify:
+    post:
+      tags:
+        - Claim Domain Operations
+      summary: Verify or approve a pending claim
+      security:
+        - OAuth2: [claims:verify]
+      parameters:
+        - name: claim_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyClaimRequest'
+      responses:
+        '200':
+          description: Claim verified
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: /token
+          scopes:
+            people:read: Read person records
+            people:create: Create person records
+            people:link_enterprise: Link person to enterprise
+            sites:read: Read site records
+            sites:create: Create site records
+            sites:attach_external_identifier: Attach GeoID to site
+            sites:update_geometry: Update site geometry
+            lots:create: Create traceable lots
+            lots:transform: Split, merge, or process lots
+            claims:create: Submit claims
+            claims:verify: Verify claims
+
+  schemas:
+    AttachGeoIdRequest:
+      type: object
+      required: [identifier_type, identifier_value, source_system, authority_type]
+      properties:
+        identifier_type:
+          type: string
+        identifier_value:
+          type: string
+        source_system:
+          type: string
+        authority_type:
+          type: string
+          
+    UpdateGeometryRequest:
+      type: object
+      required: [geometry, source_system, authority_type]
+      properties:
+        geometry:
+          type: object
+          description: GeoJSON polygon
+        source_system:
+          type: string
+        authority_type:
+          type: string
+
+    SplitLotRequest:
+      type: object
+      required: [output_lots]
+      properties:
+        output_lots:
+          type: array
+          items:
+            type: object
+            
+    VerifyClaimRequest:
+      type: object
+      properties:
+        confidence_score:
+          type: number
+        methodology:
+          type: string

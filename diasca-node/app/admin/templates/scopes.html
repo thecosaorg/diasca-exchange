@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Scopes - DIASCA Admin{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <div class="text-sm breadcrumbs text-base-content/70">
+        <ul>
+            <li><a href="/admin/platforms">Platforms</a></li>
+            <li>Manage Scopes</li>
+        </ul>
+    </div>
+    <h1 class="text-3xl font-bold text-base-content mt-2">Manage API Scopes</h1>
+</div>
+
+<div class="bg-base-100 p-8 rounded-box shadow">
+    <p class="text-base-content/80 mb-6">Select the OAuth scopes this platform is authorized to request.</p>
+    
+    {% for category, cat_scopes in grouped_scopes.items() %}
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold border-b border-base-300 pb-2 mb-4">{{ category }}</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for scope_id, description in cat_scopes.items() %}
+            <div class="form-control">
+                <label class="label cursor-pointer justify-start gap-4">
+                    <input type="checkbox" name="scopes" value="{{ scope_id }}" class="checkbox checkbox-primary" />
+                    <span class="label-text font-medium">{{ scope_id }}</span>
+                </label>
+                <div class="text-xs text-base-content/60 ml-10">{{ description }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+    
+    <div class="mt-8 flex justify-end gap-4">
+        <a href="/admin/platforms" class="btn btn-ghost">Cancel</a>
+        <button class="btn btn-primary">Save Changes</button>
+    </div>
+</div>
+{% endblock %}
