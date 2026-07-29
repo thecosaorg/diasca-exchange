@@ -4,7 +4,7 @@
 
 ## Overview
 
-The V2 Semantic Core defines **9 core concepts** providing an interoperable foundation for agricultural traceability, EUDR compliance, and sustainability data exchange. This version aligns with the Hornbill DIASCA data model.
+The V2 Semantic Core defines **9 core concepts** providing an interoperable foundation for agricultural traceability, EUDR compliance, and sustainability data exchange. Developed by COSA under GIZ funding, incorporating technical contributions from Hornbill.
 
 Key structural changes from the previous version:
 

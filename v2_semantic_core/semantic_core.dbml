@@ -3,7 +3,7 @@
 // ============================================================================
 //
 // Minimal semantic core for agricultural supply chain data exchange.
-// 9 core concepts aligned with the Hornbill DIASCA traceability model.
+// 9 core concepts developed by COSA under GIZ funding, with technical contributions from Hornbill.
 //
 // Philosophy: Interoperability requires a small shared semantic core,
 //             not a comprehensive data model.
