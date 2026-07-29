@@ -521,7 +521,7 @@ Each entity includes a `metadata` field (JSONB) for profile-specific extensions 
 
 - [x] Create DBML schema ([semantic_core.dbml](semantic_core.dbml))
 - [x] Generate SQL DDL ([semantic_core.sql](semantic_core.sql))
-- [ ] Update DBML and SQL DDL for Person/Enterprise split, Lot, LotLineage
-- [ ] Create JSON Schema for each entity
-- [ ] Define exchange profile mappings (EUDR, compliance, metrics)
+- [x] Update DBML and SQL DDL for Person/Enterprise split, Lot, LotLineage
+- [x] Create JSON Schema for each entity
+- [x] Define exchange profile mappings (EUDR, compliance, metrics)
 - [ ] Document validation rules per profile
