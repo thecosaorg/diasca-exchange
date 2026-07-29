@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://diasca.org/schemas/v2/claim.json",
+  "title": "DIASCA Claim Entity",
+  "description": "Represents an assertion, measurement, indicator, or certification about any subject entity.",
+  "type": "object",
+  "required": ["claim_id", "type", "subject_type", "subject_id", "key", "created_at", "created_by_system"],
+  "properties": {
+    "claim_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["certification", "quality", "compliance", "deforestation_free", "risk", "sustainability", "survey_response", "indicator", "observation"]
+    },
+    "subject_type": {
+      "type": "string",
+      "enum": ["person", "enterprise", "site", "lot", "transaction", "claim"]
+    },
+    "subject_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the target entity"
+    },
+    "key": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Claim identifier name (e.g. organic_certified, deforestation_free)"
+    },
+    "value": {
+      "type": ["string", "null"],
+      "description": "Claim value representation"
+    },
+    "value_type": {
+      "type": "string",
+      "enum": ["string", "number", "boolean", "date", "json"],
+      "default": "string"
+    },
+    "unit": {
+      "type": ["string", "null"],
+      "maxLength": 50
+    },
+    "category": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "verified", "disputed", "expired", "revoked"],
+      "default": "pending"
+    },
+    "confidence_score": {
+      "type": ["number", "null"],
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "claim_date": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+    "valid_from": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+    "valid_until": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+    "source": {
+      "type": ["string", "null"],
+      "maxLength": 200
+    },
+    "source_type": {
+      "type": ["string", "null"],
+      "maxLength": 50
+    },
+    "methodology": {
+      "type": ["string", "null"],
+      "description": "Assessment or calculation methodology used"
+    },
+    "metadata": {
+      "type": ["object", "null"],
+      "additionalProperties": true
+    },
+    "created_by_system": {
+      "type": "string"
+    },
+    "created_by_actor": {
+      "type": ["string", "null"]
+    },
+    "source_system": {
+      "type": ["string", "null"]
+    },
+    "authority_type": {
+      "type": ["string", "null"],
+      "enum": ["self_reported", "cooperative_registry", "government_registry", "third_party_auditor", "external_provider"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

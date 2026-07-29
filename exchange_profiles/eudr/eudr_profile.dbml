@@ -1,7 +1,62 @@
-// EUDR Exchange Profile - DBML Subset
-// Status: PLACEHOLDER - In Development
-//
-// This DBML defines the subset of the Semantic Core
-// required for EUDR compliance.
+// ============================================================================
+// DIASCA Exchange Profile: EU Deforestation Regulation (EUDR)
+// DBML Subset View
+// ============================================================================
 
-// TODO: Define EUDR-specific subset of semantic core tables
+Project diasca_eudr_profile {
+  database_type: 'PostgreSQL'
+  Note: '''
+    # DIASCA EUDR Exchange Profile
+
+    Subset DBML schema defining compulsory entities and relations required
+    for EUDR Due Diligence Statements (DDS).
+  '''
+}
+
+Table eudr_plot [headercolor: #3DAB7A] {
+  site_id uuid [pk]
+  name varchar(100) [not null]
+  type site_type [not null, note: 'Must be plot']
+  country varchar(2) [not null, note: 'ISO 3166-1 alpha-2 required']
+  region varchar(100)
+  latitude decimal(9,6) [note: 'Required if plot <= 4ha']
+  longitude decimal(9,6) [note: 'Required if plot <= 4ha']
+  geometry jsonb [note: 'GeoJSON Polygon required if plot > 4ha']
+  size decimal(10,4)
+}
+
+Table eudr_operator [headercolor: #79AD51] {
+  enterprise_id uuid [pk]
+  legal_name varchar(200) [not null]
+  enterprise_type enterprise_type [not null]
+  registration_id varchar(100)
+  tax_id varchar(100)
+  gln varchar(13)
+}
+
+Table eudr_lot [headercolor: #E8832A] {
+  lot_id uuid [pk]
+  product_type product_type [not null]
+  origin_site_id uuid [ref: > eudr_plot.site_id, not null]
+  harvest_date date [not null]
+  quantity decimal(18,4) [not null]
+  unit lot_unit [not null]
+  owner_enterprise_id uuid [ref: > eudr_operator.enterprise_id, not null]
+}
+
+Table eudr_deforestation_claim [headercolor: #1E69FD] {
+  claim_id uuid [pk]
+  subject_type subject_type [not null, note: 'lot']
+  subject_id uuid [ref: > eudr_lot.lot_id, not null]
+  key varchar(100) [not null, note: 'eudr_deforestation_free']
+  status claim_status [not null, note: 'verified']
+  confidence_score decimal(3,2)
+}
+
+Table eudr_evidence [headercolor: #1E69FD] {
+  evidence_id uuid [pk]
+  claim_id uuid [ref: > eudr_deforestation_claim.claim_id, not null]
+  type evidence_type [not null, note: 'satellite or audit_report']
+  file_hash varchar(64) [note: 'SHA-256 hash']
+  url text
+}

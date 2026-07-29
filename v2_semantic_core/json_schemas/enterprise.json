@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://diasca.org/schemas/v2/enterprise.json",
+  "title": "DIASCA Enterprise Entity",
+  "description": "Represents an organization participating in the agricultural supply chain.",
+  "type": "object",
+  "required": ["enterprise_id", "legal_name", "enterprise_type", "created_at", "created_by_system"],
+  "properties": {
+    "enterprise_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the enterprise"
+    },
+    "legal_name": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Registered legal name"
+    },
+    "enterprise_type": {
+      "type": "string",
+      "enum": ["cooperative", "processor", "trader", "exporter", "importer", "retailer", "certifier", "government", "ngo"],
+      "description": "Organization classification"
+    },
+    "registration_id": {
+      "type": ["string", "null"],
+      "maxLength": 100,
+      "description": "Legal or national registration identifier"
+    },
+    "legal_address": {
+      "type": ["string", "null"],
+      "description": "Registered physical or postal address"
+    },
+    "tax_id": {
+      "type": ["string", "null"],
+      "maxLength": 100,
+      "description": "National tax identification number (TIN/VAT)"
+    },
+    "gln": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9]{13}$",
+      "description": "GS1 Global Location Number (13 digits)"
+    },
+    "parent_enterprise_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Parent organization ID"
+    },
+    "metadata": {
+      "type": ["object", "null"],
+      "additionalProperties": true,
+      "description": "Extensible key-value metadata"
+    },
+    "created_by_system": {
+      "type": "string",
+      "description": "System that created this record"
+    },
+    "created_by_actor": {
+      "type": ["string", "null"],
+      "description": "User/actor who initiated creation"
+    },
+    "source_system": {
+      "type": ["string", "null"],
+      "description": "Original source system"
+    },
+    "authority_type": {
+      "type": ["string", "null"],
+      "enum": ["self_reported", "cooperative_registry", "government_registry", "third_party_auditor", "external_provider"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "inactive", "pending_verification", "archived"],
+      "default": "active"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

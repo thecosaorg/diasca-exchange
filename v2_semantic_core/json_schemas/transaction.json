@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://diasca.org/schemas/v2/transaction.json",
+  "title": "DIASCA Transaction Entity",
+  "description": "Represents a timestamped supply chain activity, physical movement, or commercial exchange.",
+  "type": "object",
+  "required": ["transaction_id", "type", "timestamp", "created_at", "created_by_system"],
+  "properties": {
+    "transaction_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["harvest", "receive", "aggregate", "process", "store", "transfer", "transport", "sale", "inspection", "certification", "export_tx", "import_tx"]
+    },
+    "description": {
+      "type": ["string", "null"],
+      "maxLength": 200
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_enterprise_id": {
+      "type": ["string", "null"],
+      "format": "uuid"
+    },
+    "target_enterprise_id": {
+      "type": ["string", "null"],
+      "format": "uuid"
+    },
+    "source_site_id": {
+      "type": ["string", "null"],
+      "format": "uuid"
+    },
+    "target_site_id": {
+      "type": ["string", "null"],
+      "format": "uuid"
+    },
+    "lot_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Primary lot involved"
+    },
+    "product_name": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "product_sku": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "product_gtin": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9]{8,14}$"
+    },
+    "product_category": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "quantity": {
+      "type": ["number", "null"],
+      "exclusiveMinimum": 0
+    },
+    "unit": {
+      "type": ["string", "null"],
+      "maxLength": 50
+    },
+    "production_date": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+    "expiry_date": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+    "sales_order_ref": {
+      "type": ["string", "null"],
+      "maxLength": 50
+    },
+    "purchase_order_ref": {
+      "type": ["string", "null"],
+      "maxLength": 50
+    },
+    "metadata": {
+      "type": ["object", "null"],
+      "additionalProperties": true
+    },
+    "created_by_system": {
+      "type": "string"
+    },
+    "created_by_actor": {
+      "type": ["string", "null"]
+    },
+    "source_system": {
+      "type": ["string", "null"]
+    },
+    "authority_type": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["completed", "in_transit", "cancelled", "pending"],
+      "default": "completed"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

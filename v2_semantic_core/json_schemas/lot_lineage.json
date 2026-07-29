@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://diasca.org/schemas/v2/lot_lineage.json",
+  "title": "DIASCA Lot Lineage Entity",
+  "description": "Represents a transformation relationship linking an input Lot to an output Lot within a transformation event.",
+  "type": "object",
+  "required": ["lineage_id", "event_id", "input_lot_id", "output_lot_id", "input_qty", "output_qty", "transformation_type", "created_at", "created_by_system"],
+  "properties": {
+    "lineage_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "event_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Transformation Transaction event ID"
+    },
+    "input_lot_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Source Lot consumed"
+    },
+    "output_lot_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Produced Lot"
+    },
+    "input_qty": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Quantity consumed from input lot"
+    },
+    "output_qty": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Quantity produced in output lot"
+    },
+    "transformation_type": {
+      "type": "string",
+      "enum": ["split", "merge", "process", "blend", "package", "grade"]
+    },
+    "conversion_factor": {
+      "type": ["number", "null"],
+      "description": "Yield ratio (output_qty / input_qty)"
+    },
+    "metadata": {
+      "type": ["object", "null"],
+      "additionalProperties": true
+    },
+    "created_by_system": {
+      "type": "string"
+    },
+    "created_by_actor": {
+      "type": ["string", "null"]
+    },
+    "source_system": {
+      "type": ["string", "null"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}
