@@ -32,8 +32,15 @@ DIASCA is a **Minimum Viable DPI** (Digital Public Infrastructure) that enables:
     /compliance             # Compliance & remediation
     /metrics                # Sustainability metrics
 
-/diagrams                   # Visual documentation
-/docs                       # Additional documentation
+/docs                       # Architecture & Integration documentation
+    dpi_architecture_roadmap.md  # API design & event streaming model
+    integration_mapping_guide.md # Guide for participating tools
+
+/diasca-node                # Reference Implementation Scaffold
+    app/                    # FastAPI monolith (CRUD + Domain Operations)
+    alembic/                # Database migrations
+    openapi.yaml            # OpenAPI 3.1 Contract
+
 /tools                      # Utilities
     /geojson-validator      # Python library for plot geometry validation
 

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Platforms - DIASCA Admin{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-base-content">Registered Platforms</h1>
+    <button class="btn btn-primary" onclick="register_modal.showModal()">Register New Platform</button>
+</div>
+
+{% if new_client_secret %}
+<div class="alert alert-success shadow-lg mb-8">
+    <div>
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current flex-shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <div>
+            <h3 class="font-bold">Platform Registered Successfully!</h3>
+            <div class="text-xs">Copy these credentials now. The API Key (client_secret) will not be shown again.</div>
+        </div>
+    </div>
+    <div class="flex flex-col gap-2 bg-base-100 p-4 rounded text-base-content w-full md:w-auto">
+        <div><span class="font-bold opacity-70">Client ID:</span> <code class="bg-base-200 px-2 py-1 rounded select-all">{{ new_client_id }}</code></div>
+        <div><span class="font-bold opacity-70">API Key:</span> <code class="bg-base-200 px-2 py-1 rounded select-all">{{ new_client_secret }}</code></div>
+    </div>
+</div>
+{% endif %}
+
+<dialog id="register_modal" class="modal">
+  <div class="modal-box">
+    <h3 class="font-bold text-lg">Register New Platform</h3>
+    <p class="py-4">Enter a name for the new platform to generate credentials.</p>
+    <form action="/admin/platforms" method="post">
+      <div class="form-control w-full max-w-xs mb-4">
+        <label class="label">
+          <span class="label-text">Platform Name</span>
+        </label>
+        <input type="text" name="name" placeholder="e.g. Acme ERP Integration" class="input input-bordered w-full max-w-xs" required />
+      </div>
+      <div class="modal-action">
+        <!-- if there is a button in form, it will close the modal -->
+        <button type="button" class="btn" onclick="register_modal.close()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create Platform</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<div class="overflow-x-auto bg-base-100 rounded-box shadow">
+    <table class="table table-zebra w-full">
+        <thead>
+            <tr>
+                <th>Platform Name</th>
+                <th>Client ID</th>
+                <th>Status</th>
+                <th>Created At</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for platform in platforms %}
+            <tr>
+                <td><div class="font-bold">{{ platform.name }}</div></td>
+                <td><code class="text-sm bg-base-200 px-2 py-1 rounded">{{ platform.client_id }}</code></td>
+                <td>
+                    {% if platform.is_active %}
+                    <div class="badge badge-success gap-2">Active</div>
+                    {% else %}
+                    <div class="badge badge-error gap-2">Inactive</div>
+                    {% endif %}
+                </td>
+                <td>{{ platform.created_at.strftime('%Y-%m-%d') }}</td>
+                <td>
+                    <button class="btn btn-sm btn-ghost">Edit</button>
+                    <a href="/admin/scopes?platform={{ platform.platform_id }}" class="btn btn-sm btn-outline">Manage Scopes</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="text-center py-8 text-base-content/60">No platforms registered yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

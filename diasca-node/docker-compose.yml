@@ -1,0 +1,25 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: diasca
+      POSTGRES_USER: diasca
+      POSTGRES_PASSWORD: diasca_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://diasca:diasca_dev@db:5432/diasca
+      SECRET_KEY: dev-secret-key-change-in-production
+      ENVIRONMENT: development
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
