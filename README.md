@@ -21,16 +21,11 @@ DIASCA is a **Minimum Viable DPI** (Digital Public Infrastructure) that enables:
 ## 📂 Repository Structure
 
 ```
-/v1_original_model          # Original comprehensive DIASCA model
-    /dbml                   # Database Markup Language source + diagram
-    /sql                    # MySQL and PostgreSQL DDL
-    /spec                   # Full ER specification (774 lines)
-    /podcast                # Audio walkthrough
-
-/v2_semantic_core           # Minimal semantic core (in development)
+/v2_semantic_core           # Minimal semantic core — start here
     semantic_core.md        # Documentation
     semantic_core.dbml      # DBML source
-    semantic_core.sql       # SQL DDL
+    semantic_core.sql       # PostgreSQL DDL
+    /json_schemas           # Draft 2020-12 JSON Schemas for all 9 entities
 
 /exchange_profiles          # Use-case specific data profiles
     /eudr                   # EU Deforestation Regulation
@@ -41,19 +36,13 @@ DIASCA is a **Minimum Viable DPI** (Digital Public Infrastructure) that enables:
 /docs                       # Additional documentation
 /tools                      # Utilities
     /geojson-validator      # Python library for plot geometry validation
+
+/v1_original_model          # Archive — original comprehensive model (reference only)
 ```
 
 ## 🚀 Quick Start
 
 ### View the Data Model
-
-#### V1 (Original Comprehensive Model)
-
-1. **ER Specification**: Open [`v1_original_model/spec/er-spec.md`](v1_original_model/spec/er-spec.md)
-2. **Visual Diagram**: View [`v1_original_model/dbml/diasca-model.png`](v1_original_model/dbml/diasca-model.png)
-3. **Listen**: Play [`v1_original_model/podcast/diasca-data-model-explained.mp3`](v1_original_model/podcast/diasca-data-model-explained.mp3)
-
-#### V2 (Minimal Semantic Core)
 
 1. **Specification**: Open [`v2_semantic_core/semantic_core.md`](v2_semantic_core/semantic_core.md)
 2. **DBML Schema**: View [`v2_semantic_core/semantic_core.dbml`](v2_semantic_core/semantic_core.dbml)
@@ -61,11 +50,7 @@ DIASCA is a **Minimum Viable DPI** (Digital Public Infrastructure) that enables:
 ### Apply the Schema
 
 ```bash
-# V2 Semantic Core (Recommended)
 psql -U user -d dbname -f v2_semantic_core/semantic_core.sql
-
-# V1 Original Model
-psql -U user -d dbname -f v1_original_model/sql/diasca-schema.psql.sql
 ```
 
 ### Use the GeoJSON Validator
@@ -78,32 +63,45 @@ poetry run pytest
 
 ## 🧠 Core Concepts (V2 Semantic Core)
 
-The minimal semantic core has just **6 concepts**:
+The semantic core has **9 concepts**:
 
 | Concept | Description |
 |---------|-------------|
-| **Site** | A physical place (plot, farm, factory, warehouse) |
-| **Actor** | A person or organization |
-| **Relationship** | Actor connected to Site |
-| **Transaction** | Movement of goods between actors/sites |
-| **Claim** | Statement about a site, actor, or transaction |
+| **Person** | An individual (farmer, agent, auditor, inspector) |
+| **Enterprise** | An organization (cooperative, trader, exporter, certifier) |
+| **Site** | A physical place (plot, farm, factory, warehouse, port) |
+| **Relationship** | Connection between actors and/or sites |
+| **Lot** | A traceable unit of product — the central traceability object |
+| **Transaction** | A timestamped activity or movement |
+| **LotLineage** | Transformation record linking input lots to output lots |
+| **Claim** | Statement about any entity (deforestation-free, certified, etc.) |
 | **Evidence** | Data supporting a claim |
 
 ```
-Actor ───── owns/manages ───── Site
-Actor ───── transacts with ───── Actor
-Transaction ───── involves ───── Site
-Claim ───── refers to ───── Site / Actor / Transaction
-Evidence ───── supports ───── Claim
+Person / Enterprise ─── Relationship ─── Site
+                                           │
+                                          Lot ──── Transaction ──── LotLineage
+                                           │
+                                         Claim ──── Evidence
 ```
 
 ## 📖 Documentation
 
-- [Architecture Evolution](ARCHITECTURE_EVOLUTION.md) – Project vision and roadmap
-- [V2 Semantic Core](v2_semantic_core/semantic_core.md) – Minimal core implementation
-- [V1 ER Specification](v1_original_model/spec/er-spec.md) – Complete V1 data model
-- [GeoJSON Validator](tools/geojson-validator/README.md) – Tool documentation
+- [DPI Architecture & Roadmap](docs/dpi_architecture_roadmap.md) – DPI capabilities, OAuth scopes, hybrid API, provenance, & Cloud Run architecture
+- [V2 Semantic Core](v2_semantic_core/semantic_core.md) – Minimal 9-concept core specification
+- [Architecture Evolution](ARCHITECTURE_EVOLUTION.md) – Rationale and transition from V1 to V2
+- [EUDR Exchange Profile](exchange_profiles/eudr/eudr_profile.md) – EU Deforestation Regulation specification
+- [Compliance Profile](exchange_profiles/compliance/compliance_profile.md) – Audit & remediation tracking
+- [Sustainability Metrics Profile](exchange_profiles/metrics/sustainability_metrics_profile.md) – Socio-economic & ESG indicators
+- [GeoJSON Validator](tools/geojson-validator/README.md) – Plot geometry validation tool
+
+<details>
+<summary>V1 archive (reference only)</summary>
+
+- [V1 ER Specification](v1_original_model/spec/er-spec.md) – Original comprehensive model
 - [Visual Overview (PDF)](v1_original_model/DIASCA%20data%20model%20Layman's%20terms%20-%2020250731.pdf) – Non-technical overview
+
+</details>
 
 ## 🤝 Contributing
 

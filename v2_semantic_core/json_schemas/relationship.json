@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://diasca.org/schemas/v2/relationship.json",
+  "title": "DIASCA Relationship Entity",
+  "description": "Represents connections between actors (Person/Enterprise) and/or Sites.",
+  "type": "object",
+  "required": ["relationship_id", "type", "created_at", "created_by_system"],
+  "properties": {
+    "relationship_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["employs", "owns", "manages", "member_of", "supplies", "certifies", "audits"]
+    },
+    "source_person_id": {
+      "type": ["string", "null"],
+      "format": "uuid"
+    },
+    "source_enterprise_id": {
+      "type": ["string", "null"],
+      "format": "uuid"
+    },
+    "target_person_id": {
+      "type": ["string", "null"],
+      "format": "uuid"
+    },
+    "target_enterprise_id": {
+      "type": ["string", "null"],
+      "format": "uuid"
+    },
+    "site_id": {
+      "type": ["string", "null"],
+      "format": "uuid"
+    },
+    "role": {
+      "type": ["string", "null"],
+      "maxLength": 50
+    },
+    "start_date": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+    "end_date": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+    "metadata": {
+      "type": ["object", "null"],
+      "additionalProperties": true
+    },
+    "created_by_system": {
+      "type": "string"
+    },
+    "created_by_actor": {
+      "type": ["string", "null"]
+    },
+    "source_system": {
+      "type": ["string", "null"]
+    },
+    "authority_type": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "inactive", "archived"],
+      "default": "active"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

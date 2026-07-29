@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://diasca.org/schemas/v2/evidence.json",
+  "title": "DIASCA Evidence Entity",
+  "description": "Represents supporting documentation, images, satellite data, or sensor observations linked to a Claim.",
+  "type": "object",
+  "required": ["evidence_id", "claim_id", "type", "source_name", "created_at", "created_by_system"],
+  "properties": {
+    "evidence_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "claim_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Claim supported by this evidence"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["document", "image", "satellite", "audit_report", "lab_result", "sensor_data", "gps_trace", "survey", "self_declaration", "blockchain"]
+    },
+    "source_name": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "source_provider": {
+      "type": ["string", "null"],
+      "maxLength": 200
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "url": {
+      "type": ["string", "null"],
+      "format": "uri"
+    },
+    "file_hash": {
+      "type": ["string", "null"],
+      "pattern": "^[a-fA-F0-9]{64}$",
+      "description": "SHA-256 integrity hash"
+    },
+    "confidence_score": {
+      "type": ["number", "null"],
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "observation_date": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+    "submission_date": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+    "observation_data": {
+      "type": ["object", "null"],
+      "description": "Structured observation JSON payload"
+    },
+    "metadata": {
+      "type": ["object", "null"],
+      "additionalProperties": true
+    },
+    "created_by_system": {
+      "type": "string"
+    },
+    "created_by_actor": {
+      "type": ["string", "null"]
+    },
+    "source_system": {
+      "type": ["string", "null"]
+    },
+    "authority_type": {
+      "type": ["string", "null"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

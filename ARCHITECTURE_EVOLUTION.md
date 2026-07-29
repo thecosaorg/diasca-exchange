@@ -34,16 +34,16 @@ This led to a key realization:
 
 ## Goals of This Project
 
-1. Preserve the original DIASCA model as reference (V1).
-2. Extract from it a **Minimal Semantic Core (V2)**.
-3. Define **Exchange Profiles** (EUDR, Compliance, Metrics, etc.).
-4. Provide diagrams and documentation that are understandable by:
+1. Maintain the **Minimal Semantic Core (V2)** as a small, shared interoperability baseline.
+2. Define **Exchange Profiles** (EUDR, Compliance, Livelihoods, Metrics, etc.) tailored for specific supply chain use cases.
+3. Specify a production-ready **DPI Architecture** including fine-grained OAuth capability scopes, hybrid APIs, contribution provenance, and event streaming.
+4. Provide diagrams, DBML/SQL schemas, and JSON Schema contracts understandable by:
    - NGOs
    - Governments
    - Implementers
    - Software teams
-5. Align the work with DIASCA, DPI, SAFE, and data space conversations.
-6. Propose practical answers to recurring DIASCA questions.
+5. Align the work with DIASCA, DPI, SAFE, GIZ federation, and data space conversations.
+6. Propose practical answers to recurring DIASCA traceability and data exchange questions.
 
 ---
 
@@ -65,7 +65,7 @@ Digital Public Infrastructure refers to shared digital systems that enable inter
 | DPI Principle | DIASCA Approach |
 |---------------|-----------------|
 | Shared rails, not shared apps | Define data exchange standards, not software |
-| Minimal by design | Semantic Core with only 6 concepts |
+| Minimal by design | Semantic Core with 9 concepts — Person, Enterprise, Site, Relationship, Lot, Transaction, LotLineage, Claim, Evidence |
 | Use-case agnostic | Exchange Profiles adapt the core to EUDR, compliance, livelihoods, etc. |
 | No vendor lock-in | SQL, DBML, and JSON schemas—implementable anywhere |
 | Federation over centralization | Each actor manages their own data; standards enable exchange |
@@ -83,34 +83,21 @@ This positions DIASCA not as a product, but as **infrastructure**—a set of agr
 The repository is organized as follows:
 
 ```
-/v1_original_model          # Original comprehensive DIASCA model
-    /dbml
-        diasca-model.dbml   # DBML source for ER diagram
-        diasca-model.png    # Rendered ER diagram
-    /sql
-        diasca-schema.mysql.sql   # MySQL DDL
-        diasca-schema.psql.sql    # PostgreSQL DDL
-    /spec
-        er-spec.md          # Full Entity-Relationship Model Documentation
-    /podcast
-        diasca-data-model-explained.mp3   # Audio walkthrough
-    DIASCA data model Layman's terms - 20250731.pdf  # Visual overview
-
-/v2_semantic_core           # Minimal semantic core (in development)
+/v2_semantic_core           # Minimal semantic core — start here
     semantic_core.md        # Documentation
     semantic_core.dbml      # DBML source
-    semantic_core.sql       # SQL DDL
+    semantic_core.sql       # PostgreSQL DDL
+    /json_schemas           # Draft 2020-12 JSON Schemas for all 9 entities
 
 /exchange_profiles          # Use-case specific data profiles
-    /eudr                   # EU Deforestation Regulation
-        eudr_profile.md
-        eudr_profile.dbml
-    /compliance             # Compliance & remediation (placeholder)
-    /metrics                # Sustainability metrics (placeholder)
+    /eudr                   # EU Deforestation Regulation (EUDR) profile
+    /compliance             # Compliance & remediation profile
+    /metrics                # Sustainability metrics profile
 
 /diagrams                   # Visual documentation
 
 /docs                       # Additional documentation
+    dpi_architecture_roadmap.md # DPI Architecture, API Contracts & OAuth Scopes
     lessons_from_recent_implementations.md
     design_principles.md
     open_questions.md
@@ -120,6 +107,8 @@ The repository is organized as follows:
         /src
         /docs
         /tests
+
+/v1_original_model          # Archive — original comprehensive model (reference only)
 
 # Root files
 ARCHITECTURE_EVOLUTION.md   # This document
@@ -131,11 +120,12 @@ LICENSE                     # MIT License
 
 | Component | Description |
 |-----------|-------------|
-| **V1 Model** | Complete DIASCA model with DBML, SQL, spec, and podcast |
-| **V2 Semantic Core** | Minimal 6-concept core (in development) |
-| **Exchange Profiles** | EUDR, compliance, metrics profiles (planned) |
+| **V2 Semantic Core** | Minimal 9-concept core: Person, Enterprise, Site, Relationship, Lot, Transaction, LotLineage, Claim, Evidence |
+| **JSON Schemas** | Formal Draft 2020-12 JSON Schema definitions for all 9 core entities |
+| **DPI Roadmap & Architecture** | Blueprint covering DPI features, fine-grained OAuth scopes, hybrid API design, provenance, & Cloud Run |
+| **Exchange Profiles** | Practical profiles for EUDR Article 9, compliance remediation, and sustainability metrics |
 | **GeoJSON Validator** | Python library for validating plot geometries |
-| **PDF Overview** | Visual "layman's terms" document for non-technical audiences |
+| **V1 Model** | Archive — original comprehensive model (reference only) |
 
 ---
 
@@ -171,11 +161,14 @@ The semantic core should answer:
 
 | Concept | Description |
 |---------|-------------|
-| Site | A physical place (plot, farm, factory, warehouse) |
-| Actor | A person or organization |
-| Relationship | Actor connected to Site |
-| Transaction | Movement of goods between actors/sites |
-| Claim | Statement about a site, actor, or transaction |
+| Person | An individual (farmer, field agent, auditor, inspector) |
+| Enterprise | An organization (cooperative, trader, exporter, certifier) |
+| Site | A physical place (plot, farm, factory, warehouse, port) |
+| Relationship | Connection between actors and/or sites |
+| Lot | A traceable unit of product — the central traceability object |
+| Transaction | A timestamped activity or movement |
+| LotLineage | Transformation record linking input lots to output lots |
+| Claim | Statement about any entity |
 | Evidence | Data supporting a claim |
 
 ---
@@ -183,11 +176,11 @@ The semantic core should answer:
 ## Semantic Core Diagram (Textual)
 
 ```
-Actor ───── owns/manages ───── Site
-Actor ───── transacts with ───── Actor
-Transaction ───── involves ───── Site
-Claim ───── refers to ───── Site / Actor / Transaction
-Evidence ───── supports ───── Claim
+Person / Enterprise ─── Relationship ─── Site
+                                           │
+                                          Lot ──── Transaction ──── LotLineage
+                                           │
+                                         Claim ──── Evidence
 ```
 
 This structure is sufficient to support:
@@ -212,12 +205,14 @@ Minimum required:
 
 | Field | From Semantic Core |
 |------|---------------------|
-| Plot polygon (GeoJSON) | Site |
-| Supplier identity | Actor |
-| Contract reference | Relationship |
-| Deforestation risk | Claim |
+| Plot polygon (GeoJSON) | Site (type=plot) |
+| Supplier identity | Person + Enterprise |
+| Ownership / supply relationship | Relationship |
+| Lot of product (harvest batch) | Lot |
+| Deforestation-free assertion | Claim (type=deforestation_free, subject=lot) |
 | Evidence | Evidence |
-| Transaction reference | Transaction |
+| Export / transfer event | Transaction |
+| Transformation chain (processing) | LotLineage |
 
 No additional model required.
 
@@ -231,9 +226,9 @@ No additional model required.
 - Farms are sites
 
 ```
-Actor (Farmer) ─── manages ─── Site (Farm/Plot)
+Person (Farmer) ─── Relationship (manages) ─── Site (Farm/Plot)
 Evidence (Survey Response) ─── supports ─── Claim (Indicator value)
-Claim ─── refers to ─── Actor / Site
+Claim ─── refers to ─── Person / Site / Lot
 ```
 
 > Traceability, compliance, and farmer livelihoods are not separate data problems. They are different exchange profiles over the same minimal semantic core.

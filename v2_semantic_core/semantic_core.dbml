@@ -1,10 +1,9 @@
 // ============================================================================
 // DIASCA Semantic Core V2 - Database Markup Language (DBML)
 // ============================================================================
-// 
-// This DBML defines the minimal semantic core for agricultural supply chain
-// data exchange. It reduces 17+ V1 tables to 6 core concepts while preserving
-// essential traceability and compliance information.
+//
+// Minimal semantic core for agricultural supply chain data exchange.
+// 9 core concepts aligned with the Hornbill DIASCA traceability model.
 //
 // Philosophy: Interoperability requires a small shared semantic core,
 //             not a comprehensive data model.
@@ -16,17 +15,20 @@ Project diasca_semantic_core {
   database_type: 'PostgreSQL'
   Note: '''
     # DIASCA Semantic Core V2
-    
+
     Minimal data model for agricultural supply chain interoperability.
-    
-    ## Core Concepts (6)
-    - Site: Physical locations (plots, farms, warehouses)
-    - Actor: People and organizations
+
+    ## Core Concepts (9)
+    - Person: Individual actors (farmers, agents, auditors)
+    - Enterprise: Organizations (cooperatives, traders, exporters)
+    - Site: Physical locations (plots, farms, warehouses, ports)
     - Relationship: Connections between actors and sites
-    - Transaction: Movement of goods or value
-    - Claim: Statements/assertions about any entity
+    - Lot: Traceable unit of product — central traceability object
+    - Transaction: Timestamped activities and movements
+    - LotLineage: Transformation records (split, merge, blend)
+    - Claim: Statements and assertions about any entity
     - Evidence: Data supporting claims
-    
+
     ## Design Principles
     - Small core, many exchange profiles
     - Tool-agnostic (data standards, not software)
@@ -35,10 +37,31 @@ Project diasca_semantic_core {
 }
 
 // ============================================================================
-// ENUMS - Controlled vocabularies for type fields
+// ENUMS
 // ============================================================================
 
-// Site classification - where things happen
+Enum person_role {
+  farmer        [note: 'Primary agricultural producer']
+  field_agent   [note: 'Field data collector or extension worker']
+  auditor       [note: 'Internal or third-party auditor']
+  inspector     [note: 'Regulatory or certification inspector']
+  producer      [note: 'General producer role']
+  buyer         [note: 'Purchasing agent']
+  certifier     [note: 'Certification body representative']
+}
+
+Enum enterprise_type {
+  cooperative   [note: 'Farmer cooperative or union']
+  processor     [note: 'Processing facility operator']
+  trader        [note: 'Commodity trader']
+  exporter      [note: 'Export company']
+  importer      [note: 'Import company']
+  retailer      [note: 'Retail business']
+  certifier     [note: 'Certification body']
+  government    [note: 'Government agency']
+  ngo           [note: 'Non-governmental organization']
+}
+
 Enum site_type {
   plot                  [note: 'Agricultural land parcel']
   farm                  [note: 'Collection of plots under common management']
@@ -50,58 +73,79 @@ Enum site_type {
   port                  [note: 'Import/export point']
 }
 
-// Actor classification - who participates
-Enum actor_type {
-  person      [note: 'Individual (farmer, inspector, agent)']
-  enterprise  [note: 'Legal entity (company, cooperative, NGO)']
-  government  [note: 'Government agency or regulatory body']
-}
-
-// Relationship classification - how entities connect
 Enum relationship_type {
   employs     [note: 'Enterprise employs person']
   owns        [note: 'Actor owns site']
   manages     [note: 'Actor manages site (without ownership)']
   member_of   [note: 'Person is member of cooperative/group']
-  supplies    [note: 'Actor supplies to another actor']
-  certifies   [note: 'Actor certifies another actor']
-  audits      [note: 'Actor audits another actor']
+  supplies    [note: 'Enterprise supplies to another enterprise']
+  certifies   [note: 'Enterprise certifies another actor or site']
+  audits      [note: 'Person or enterprise audits another actor or site']
 }
 
-// Transaction classification - what movements occur
-// Aligned with GS1 EPCIS event types where applicable
+Enum product_type {
+  raw_cherry      [note: 'Freshly harvested coffee cherries']
+  parchment       [note: 'Wet-processed parchment coffee']
+  green_coffee    [note: 'Milled green coffee beans']
+  roasted_coffee  [note: 'Roasted coffee']
+  cocoa_fresh     [note: 'Fresh cocoa pods/beans']
+  cocoa_dried     [note: 'Dried cocoa beans']
+  cocoa_processed [note: 'Processed cocoa (butter, powder, liquor)']
+  other           [note: 'Other commodity']
+}
+
+Enum lot_unit {
+  kg    [note: 'Kilograms']
+  mt    [note: 'Metric tonnes']
+  bags  [note: 'Standard export bags']
+  liters [note: 'Litres']
+}
+
 Enum transaction_type {
   harvest       [note: 'Harvesting from plot']
-  processing    [note: 'Transformation of product (GS1: Transformation)']
+  receive       [note: 'Receiving a lot at a facility']
+  aggregate     [note: 'Combining lots at a collection point']
+  process       [note: 'Transformation of product — triggers LotLineage']
+  store         [note: 'Storage event']
   transfer      [note: 'Physical movement between sites (GS1: Shipping/Receiving)']
+  transport     [note: 'In-transit movement']
   sale          [note: 'Commercial transaction']
   inspection    [note: 'Quality check event (GS1: Inspection)']
   certification [note: 'Certification event']
-  import_tx     [note: 'Cross-border import']
   export_tx     [note: 'Cross-border export']
+  import_tx     [note: 'Cross-border import']
 }
 
-// Claim classification - what assertions are made
+Enum transformation_type {
+  split    [note: 'One lot divided into multiple output lots']
+  merge    [note: 'Multiple lots combined into one']
+  process  [note: 'Chemical or physical transformation (e.g., wet milling)']
+  blend    [note: 'Homogeneous mixing of lots']
+  package  [note: 'Repackaging into new lot units']
+  grade    [note: 'Separation by quality grade']
+}
+
 Enum claim_type {
-  certification     [note: 'Certification status (organic, fair trade, Rainforest Alliance)']
-  quality           [note: 'Quality measurement or grade']
-  compliance        [note: 'Regulatory compliance status (EUDR, etc.)']
-  risk              [note: 'Risk assessment (deforestation, labor, climate)']
-  sustainability    [note: 'Sustainability metric or indicator']
-  survey_response   [note: 'Survey or questionnaire answer']
-  indicator         [note: 'KPI or performance indicator value']
-  observation       [note: 'Field observation or note']
+  certification      [note: 'Certification status (organic, fair trade, Rainforest Alliance)']
+  quality            [note: 'Quality measurement or grade']
+  compliance         [note: 'Regulatory compliance status (EUDR, etc.)']
+  deforestation_free [note: 'EUDR deforestation-free assertion']
+  risk               [note: 'Risk assessment (deforestation, labor, climate)']
+  sustainability     [note: 'Sustainability metric or indicator']
+  survey_response    [note: 'Survey or questionnaire answer']
+  indicator          [note: 'KPI or performance indicator value']
+  observation        [note: 'Field observation or note']
 }
 
-// What entity a claim refers to
 Enum subject_type {
+  person      [note: 'Claim about an individual']
+  enterprise  [note: 'Claim about an organization']
   site        [note: 'Claim about a physical location']
-  actor       [note: 'Claim about a person or organization']
-  transaction [note: 'Claim about a movement or exchange']
+  lot         [note: 'Claim about a traceable product unit']
+  transaction [note: 'Claim about an activity or movement']
   claim       [note: 'Claim about another claim (nested)']
 }
 
-// Data type of claim values
 Enum value_type {
   string
   number
@@ -110,7 +154,6 @@ Enum value_type {
   json
 }
 
-// Claim lifecycle status
 Enum claim_status {
   pending   [note: 'Awaiting verification']
   verified  [note: 'Confirmed by evidence']
@@ -119,7 +162,6 @@ Enum claim_status {
   revoked   [note: 'Withdrawn or cancelled']
 }
 
-// Evidence classification - how claims are supported
 Enum evidence_type {
   document          [note: 'PDF, certificate, contract']
   image             [note: 'Photo evidence']
@@ -127,324 +169,387 @@ Enum evidence_type {
   audit_report      [note: 'Third-party audit report']
   lab_result        [note: 'Laboratory analysis']
   sensor_data       [note: 'IoT or sensor readings']
+  gps_trace         [note: 'GPS track data']
   survey            [note: 'Survey response data']
   self_declaration  [note: 'Self-reported data']
   blockchain        [note: 'Blockchain attestation']
 }
 
 // ============================================================================
-// TABLE 1: SITE
+// TABLE 1: PERSON
+// ============================================================================
+// An individual actor participating in the supply chain.
+// Maps to: V1 People table
+// ============================================================================
+
+Table person [headercolor: #79AD51] {
+  person_id uuid [pk, default: `gen_random_uuid()`, note: 'Unique identifier']
+
+  name varchar(100) [not null, note: 'Full name']
+  role person_role  [not null, note: 'Function in supply chain']
+
+  email varchar(255) [note: 'Contact email address']
+  phone varchar(50)  [note: 'Contact phone number']
+
+  linked_enterprise_id uuid [ref: > enterprise.enterprise_id, note: 'Primary organization or cooperative']
+
+  metadata jsonb [note: 'Extensible key-value pairs for profile-specific fields']
+
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp
+
+  indexes {
+    role [name: 'idx_person_role']
+    linked_enterprise_id [name: 'idx_person_enterprise']
+    name [name: 'idx_person_name']
+  }
+
+  Note: '''
+    # Person
+    Individual actors: farmers, field agents, auditors, inspectors.
+    Use linked_enterprise_id for the primary affiliation.
+    Formal employment/membership tracked via Relationship.
+  '''
+}
+
+// ============================================================================
+// TABLE 2: ENTERPRISE
+// ============================================================================
+// An organization participating in the supply chain.
+// Maps to: V1 Enterprises table
+// ============================================================================
+
+Table enterprise [headercolor: #79AD51] {
+  enterprise_id uuid [pk, default: `gen_random_uuid()`, note: 'Unique identifier']
+
+  legal_name      varchar(200)    [not null, note: 'Registered legal name']
+  enterprise_type enterprise_type [not null, note: 'Organization type']
+
+  registration_id varchar(100) [note: 'Legal/national identifier (country-specific)']
+  legal_address   text         [note: 'Registered address']
+  tax_id          varchar(100) [note: 'National tax identifier (TIN, VAT, etc.)']
+  gln             varchar(13)  [note: 'GS1 Global Location Number (13 digits)']
+
+  parent_enterprise_id uuid [ref: > enterprise.enterprise_id, note: 'Parent organization (for subsidiaries)']
+
+  metadata jsonb [note: 'Extensible key-value pairs for profile-specific fields']
+
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp
+
+  indexes {
+    enterprise_type [name: 'idx_enterprise_type']
+    legal_name [name: 'idx_enterprise_name']
+    tax_id [name: 'idx_enterprise_tax_id']
+    gln [name: 'idx_enterprise_gln']
+    registration_id [name: 'idx_enterprise_reg_id']
+  }
+
+  Note: '''
+    # Enterprise
+    Organizations in the supply chain: cooperatives, processors, traders, exporters.
+    registration_id and tax_id may refer to the same identifier depending on jurisdiction.
+    Use gln for GS1 Global Location Number.
+  '''
+}
+
+// ============================================================================
+// TABLE 3: SITE
 // ============================================================================
 // A physical location where actors operate, products originate, or events occur.
 // Maps to: V1 Sites table + geographic fields from BatchesLotsSerials
-// EUDR Note: For compliance, latitude/longitude OR geometry required, plus country.
 // ============================================================================
 
-Table site [headercolor: #79AD51] {
-  // Primary key
-  id uuid [pk, default: `gen_random_uuid()`, note: 'Unique identifier']
-  
-  // Core fields
+Table site [headercolor: #3DAB7A] {
+  site_id uuid [pk, default: `gen_random_uuid()`, note: 'Unique identifier']
+
   name varchar(100) [not null, note: 'Human-readable name']
-  type site_type [not null, note: 'Site classification']
-  
-  // Hierarchy
-  parent_id uuid [ref: > site.id, note: 'Hierarchical parent site (e.g., farm contains plots)']
-  owner_actor_id uuid [ref: > actor.id, note: 'Actor who owns or operates this site']
-  
-  // Location - address
+  type site_type    [not null, note: 'Site classification']
+
+  parent_id            uuid [ref: > site.site_id, note: 'Hierarchical parent site']
+  owner_person_id      uuid [ref: > person.person_id, note: 'Person who owns/operates this site']
+  owner_enterprise_id  uuid [ref: > enterprise.enterprise_id, note: 'Enterprise that owns/operates this site']
+
   address text [note: 'Physical or postal address']
-  
-  // Location - coordinates (EUDR requirement)
-  latitude decimal(9,6) [note: 'GPS latitude (-90 to 90) - required for EUDR if no geometry']
-  longitude decimal(9,6) [note: 'GPS longitude (-180 to 180) - required for EUDR if no geometry']
-  altitude float [note: 'Elevation in meters above sea level']
-  
-  // Location - polygon for complex shapes (EUDR requirement for plots > 4ha)
-  geometry jsonb [note: 'GeoJSON geometry for plot polygons - required for EUDR if > 4 hectares']
-  
-  // Size
-  size decimal(10,4) [note: 'Area measurement (typically hectares)']
-  size_unit varchar(20) [default: 'hectares', note: 'Unit of measurement for size']
-  
-  // Administrative location (EUDR requirement)
-  country varchar(2) [note: 'ISO 3166-1 alpha-2 country code - required for EUDR']
-  region varchar(100) [note: 'Subnational region or administrative area']
-  
-  // Flags
-  is_headquarters boolean [default: false, note: 'Is this the main office for the owner actor?']
-  
-  // Extensibility
-  metadata jsonb [note: 'Extensible key-value pairs for profile-specific fields']
-  
-  // Audit fields
-  created_at timestamp [not null, default: `now()`, note: 'Record creation time']
-  updated_at timestamp [note: 'Last modification time']
+
+  latitude  decimal(9,6) [note: 'GPS latitude (-90 to 90) — required for EUDR if no geometry']
+  longitude decimal(9,6) [note: 'GPS longitude (-180 to 180) — required for EUDR if no geometry']
+  altitude  float        [note: 'Elevation in meters above sea level']
+
+  geometry jsonb [note: 'GeoJSON geometry for plot polygons — required for EUDR plots > 4ha']
+
+  size      decimal(10,4) [note: 'Area measurement (typically hectares)']
+  size_unit varchar(20)   [default: 'hectares', note: 'Unit of measurement for size']
+
+  country varchar(2)   [note: 'ISO 3166-1 alpha-2 country code — required for EUDR']
+  region  varchar(100) [note: 'Subnational region or administrative area']
+
+  is_headquarters boolean [default: false, note: 'Is this the main office?']
+
+  metadata jsonb [note: 'Extensible key-value pairs']
+
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp
 
   indexes {
-    owner_actor_id [name: 'idx_site_owner']
-    type [name: 'idx_site_type']
-    country [name: 'idx_site_country']
+    owner_person_id     [name: 'idx_site_owner_person']
+    owner_enterprise_id [name: 'idx_site_owner_enterprise']
+    type                [name: 'idx_site_type']
+    country             [name: 'idx_site_country']
     (latitude, longitude) [name: 'idx_site_coordinates']
   }
-  
+
   Note: '''
     # Site
-    Physical locations in the supply chain: plots, farms, factories, warehouses.
-    
+    Physical locations: plots, farms, factories, warehouses, ports.
+
     ## EUDR Compliance
-    For EU Deforestation Regulation compliance:
-    - `country` is always required
-    - For plots ≤ 4 hectares: `latitude` + `longitude` required
-    - For plots > 4 hectares: `geometry` (GeoJSON polygon) required
+    - country is always required
+    - For plots <= 4 hectares: latitude + longitude required
+    - For plots > 4 hectares: geometry (GeoJSON polygon) required
   '''
 }
 
 // ============================================================================
-// TABLE 2: ACTOR
-// ============================================================================
-// A person or organization participating in the supply chain.
-// Maps to: V1 People + Enterprises tables (unified with type discriminator)
-// ============================================================================
-
-Table actor [headercolor: #79AD51] {
-  // Primary key
-  id uuid [pk, default: `gen_random_uuid()`, note: 'Unique identifier']
-  
-  // Type discriminator
-  type actor_type [not null, note: 'Actor classification: person, enterprise, government']
-  
-  // Core fields
-  name varchar(100) [not null, note: 'Legal name or display name']
-  role varchar(50) [note: 'Function in supply chain (producer, buyer, certifier, etc.)']
-  
-  // Contact information
-  email varchar(255) [note: 'Contact email address']
-  phone varchar(50) [note: 'Contact phone number']
-  
-  // Enterprise-specific fields (when type = enterprise)
-  legal_address text [note: 'Registered legal address']
-  tax_id varchar(100) [note: 'National tax identifier (TIN, VAT number, etc.)']
-  gln varchar(13) [note: 'GS1 Global Location Number (exactly 13 digits)']
-  
-  // Hierarchy (for cooperatives, subsidiaries)
-  parent_actor_id uuid [ref: > actor.id, note: 'Parent organization (e.g., cooperative, holding company)']
-  
-  // Extensibility
-  metadata jsonb [note: 'Extensible key-value pairs for profile-specific fields']
-  
-  // Audit fields
-  created_at timestamp [not null, default: `now()`, note: 'Record creation time']
-  updated_at timestamp [note: 'Last modification time']
-
-  indexes {
-    type [name: 'idx_actor_type']
-    name [name: 'idx_actor_name']
-    tax_id [name: 'idx_actor_tax_id']
-    gln [name: 'idx_actor_gln']
-    parent_actor_id [name: 'idx_actor_parent']
-  }
-  
-  Note: '''
-    # Actor
-    People and organizations in the supply chain.
-    
-    ## Type Usage
-    - `person`: Individual farmers, inspectors, agents
-    - `enterprise`: Companies, cooperatives, NGOs, traders
-    - `government`: Regulatory bodies, customs authorities
-    
-    ## GS1 Integration
-    - Use `gln` for GS1 Global Location Number
-    - Use `tax_id` for national identifiers
-  '''
-}
-
-// ============================================================================
-// TABLE 3: RELATIONSHIP
+// TABLE 4: RELATIONSHIP
 // ============================================================================
 // Connections between actors and/or sites.
 // Maps to: V1 EnterprisePeople + implicit site ownership relationships
 // ============================================================================
 
 Table relationship [headercolor: #6724BB] {
-  // Primary key
-  id uuid [pk, default: `gen_random_uuid()`, note: 'Unique identifier']
-  
-  // Relationship type
+  relationship_id uuid [pk, default: `gen_random_uuid()`, note: 'Unique identifier']
+
   type relationship_type [not null, note: 'Type of relationship']
-  
-  // Participants (at least one actor and optionally a target actor or site)
-  source_actor_id uuid [ref: > actor.id, note: 'The primary actor in the relationship']
-  target_actor_id uuid [ref: > actor.id, note: 'Secondary actor (for actor-to-actor relationships)']
-  site_id uuid [ref: > site.id, note: 'Related site (for actor-to-site relationships)']
-  
-  // Role specification
-  role varchar(50) [note: 'Specific role within the relationship (e.g., "manager", "board member")']
-  
-  // Temporal bounds
-  start_date date [note: 'When the relationship began']
-  end_date date [note: 'When the relationship ended (null if ongoing)']
-  
-  // Extensibility
-  metadata jsonb [note: 'Extensible key-value pairs for profile-specific fields']
-  
-  // Audit fields
-  created_at timestamp [not null, default: `now()`, note: 'Record creation time']
-  updated_at timestamp [note: 'Last modification time']
+
+  source_person_id     uuid [ref: > person.person_id,         note: 'Source person']
+  source_enterprise_id uuid [ref: > enterprise.enterprise_id, note: 'Source enterprise']
+  target_person_id     uuid [ref: > person.person_id,         note: 'Target person']
+  target_enterprise_id uuid [ref: > enterprise.enterprise_id, note: 'Target enterprise']
+  site_id              uuid [ref: > site.site_id,             note: 'Related site']
+
+  role       varchar(50) [note: 'Specific role within the relationship']
+  start_date date        [note: 'When the relationship began']
+  end_date   date        [note: 'When the relationship ended (null if ongoing)']
+
+  metadata jsonb [note: 'Extensible key-value pairs']
+
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp
 
   indexes {
-    source_actor_id [name: 'idx_relationship_source_actor']
-    target_actor_id [name: 'idx_relationship_target_actor']
-    site_id [name: 'idx_relationship_site']
-    type [name: 'idx_relationship_type']
-    (source_actor_id, target_actor_id, type) [name: 'idx_relationship_actors_type']
-    (source_actor_id, site_id, type) [name: 'idx_relationship_actor_site_type']
+    source_person_id     [name: 'idx_rel_source_person']
+    source_enterprise_id [name: 'idx_rel_source_enterprise']
+    target_person_id     [name: 'idx_rel_target_person']
+    target_enterprise_id [name: 'idx_rel_target_enterprise']
+    site_id              [name: 'idx_rel_site']
+    type                 [name: 'idx_rel_type']
   }
-  
+
   Note: '''
     # Relationship
-    Connections between actors and sites.
-    
+    Exactly one source (person OR enterprise) and at least one target
+    (person, enterprise, or site) must be set.
+
     ## Patterns
-    - Actor employs Actor: source_actor_id (enterprise) + target_actor_id (person)
-    - Actor owns Site: source_actor_id + site_id
-    - Actor supplies Actor: source_actor_id (seller) + target_actor_id (buyer)
-    
-    ## Temporal
-    Use start_date/end_date to track relationship history.
+    - employs: source=enterprise, target=person
+    - owns/manages: source=person or enterprise, site_id set
+    - member_of: source=person, target=enterprise
+    - supplies: source=enterprise, target=enterprise
   '''
 }
 
 // ============================================================================
-// TABLE 4: TRANSACTION
+// TABLE 5: LOT
 // ============================================================================
-// Movement of goods, products, or value between actors/sites.
-// Maps to: V1 Events + BusinessTransactions + Products + BatchesLotsSerials
-// Note: Product and batch info denormalized for simpler querying and exchange.
+// The traceable unit of product. Central object for agricultural traceability.
+// Maps to: V1 BatchesLotsSerials
+// ============================================================================
+
+Table lot [headercolor: #E8832A] {
+  lot_id uuid [pk, default: `gen_random_uuid()`, note: 'Unique identifier']
+
+  product_type  product_type  [not null, note: 'Commodity and processing stage']
+  origin_site_id uuid         [ref: > site.site_id, not null, note: 'Source plot — must be type=plot']
+
+  harvest_date     date [note: 'Date or start of harvest period']
+  harvest_date_end date [note: 'End of harvest period (for ranges)']
+
+  quantity decimal(18,4) [not null, note: 'Quantity in this lot']
+  unit     lot_unit      [not null, note: 'Unit of measure']
+
+  owner_enterprise_id uuid [ref: > enterprise.enterprise_id, not null, note: 'Current custodian/owner']
+
+  batch_number varchar(100) [note: 'Internal batch/lot identifier']
+  disposition  varchar(50)  [note: 'Current state (GS1 CBV: active, in_progress, quarantined)']
+
+  metadata jsonb [note: 'Extensible key-value pairs']
+
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp
+
+  indexes {
+    product_type        [name: 'idx_lot_product_type']
+    origin_site_id      [name: 'idx_lot_origin_site']
+    owner_enterprise_id [name: 'idx_lot_owner']
+    harvest_date        [name: 'idx_lot_harvest_date']
+    batch_number        [name: 'idx_lot_batch_number']
+  }
+
+  Note: '''
+    # Lot
+    The central traceability object. Tracks a commodity unit from
+    harvest through all transformations to export.
+
+    ## Validation
+    - origin_site_id must reference a site of type plot
+    - harvest_date must precede any transformation events
+    - Transformations between lots are tracked in LotLineage
+  '''
+}
+
+// ============================================================================
+// TABLE 6: TRANSACTION
+// ============================================================================
+// A timestamped activity, movement, or commercial exchange.
+// Maps to: V1 Events + BusinessTransactions + Products
 // ============================================================================
 
 Table transaction [headercolor: #F38833] {
-  // Primary key
-  id uuid [pk, default: `gen_random_uuid()`, note: 'Unique identifier']
-  
-  // Transaction type
-  type transaction_type [not null, note: 'Transaction classification (aligned with GS1 EPCIS)']
-  description varchar(200) [note: 'Human-readable description of the transaction']
-  
-  // When
-  timestamp timestamp [not null, note: 'When the transaction occurred']
-  
-  // Who (actors involved)
-  source_actor_id uuid [ref: > actor.id, note: 'Originating actor (seller, shipper)']
-  target_actor_id uuid [ref: > actor.id, note: 'Receiving actor (buyer, receiver)']
-  
-  // Where (sites involved)
-  source_site_id uuid [ref: > site.id, note: 'Originating site']
-  target_site_id uuid [ref: > site.id, note: 'Destination site']
-  origin_site_id uuid [ref: > site.id, note: 'Original production site (plot of origin)']
-  
-  // What - Product information (denormalized from V1 Products)
-  product_name varchar(100) [note: 'Name of product being transacted']
-  product_sku varchar(100) [note: 'Internal stock keeping unit']
-  product_gtin varchar(14) [note: 'GS1 Global Trade Item Number (8, 12, 13, or 14 digits)']
-  product_category varchar(100) [note: 'Product classification or category']
-  
-  // What - Batch information (denormalized from V1 BatchesLotsSerials)
-  batch_number varchar(100) [note: 'Batch, lot, or serial number']
-  quantity decimal(18,2) [note: 'Amount being transacted']
-  unit varchar(50) [note: 'Unit of measure (kg, MT, bags, etc.)']
-  production_date date [note: 'When the product was produced/harvested']
-  expiry_date date [note: 'Product expiration date']
-  
-  // Commercial references
-  sales_order_ref varchar(50) [note: 'Sales order reference number']
+  transaction_id uuid [pk, default: `gen_random_uuid()`, note: 'Unique identifier']
+
+  type        transaction_type [not null, note: 'Transaction classification']
+  description varchar(200)     [note: 'Human-readable description']
+  "timestamp" timestamp        [not null, note: 'When the transaction occurred']
+
+  source_enterprise_id uuid [ref: > enterprise.enterprise_id, note: 'Originating enterprise']
+  target_enterprise_id uuid [ref: > enterprise.enterprise_id, note: 'Receiving enterprise']
+
+  source_site_id uuid [ref: > site.site_id, note: 'Originating site']
+  target_site_id uuid [ref: > site.site_id, note: 'Destination site']
+
+  lot_id uuid [ref: > lot.lot_id, note: 'Primary lot involved (preferred over embedded product fields)']
+
+  // Embedded product fields — for systems without discrete Lot entities
+  product_name     varchar(100) [note: 'Product name (use lot_id where possible)']
+  product_sku      varchar(100) [note: 'Internal stock keeping unit']
+  product_gtin     varchar(14)  [note: 'GS1 Global Trade Item Number']
+  product_category varchar(100) [note: 'Product classification']
+  quantity         decimal(18,2) [note: 'Amount transacted']
+  unit             varchar(50)   [note: 'Unit of measure']
+  production_date  date          [note: 'When product was produced/harvested']
+  expiry_date      date          [note: 'Product expiration date']
+
+  sales_order_ref    varchar(50) [note: 'Sales order reference number']
   purchase_order_ref varchar(50) [note: 'Purchase order reference number']
-  
-  // Status (GS1 CBV disposition)
-  disposition varchar(50) [note: 'Current status: active, in_progress, quarantined (GS1 CBV terms)']
-  
-  // Extensibility
-  metadata jsonb [note: 'Extensible key-value pairs for profile-specific fields']
-  
-  // Audit fields
-  created_at timestamp [not null, default: `now()`, note: 'Record creation time']
-  updated_at timestamp [note: 'Last modification time']
+
+  metadata jsonb [note: 'Extensible key-value pairs']
+
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp
 
   indexes {
-    type [name: 'idx_transaction_type']
-    timestamp [name: 'idx_transaction_timestamp']
-    source_actor_id [name: 'idx_transaction_source_actor']
-    target_actor_id [name: 'idx_transaction_target_actor']
-    source_site_id [name: 'idx_transaction_source_site']
-    target_site_id [name: 'idx_transaction_target_site']
-    origin_site_id [name: 'idx_transaction_origin_site']
-    batch_number [name: 'idx_transaction_batch']
-    product_gtin [name: 'idx_transaction_gtin']
-    (source_actor_id, target_actor_id, timestamp) [name: 'idx_transaction_actors_time']
+    type                 [name: 'idx_transaction_type']
+    "timestamp"          [name: 'idx_transaction_timestamp']
+    source_enterprise_id [name: 'idx_transaction_source_enterprise']
+    target_enterprise_id [name: 'idx_transaction_target_enterprise']
+    source_site_id       [name: 'idx_transaction_source_site']
+    target_site_id       [name: 'idx_transaction_target_site']
+    lot_id               [name: 'idx_transaction_lot']
+    product_gtin         [name: 'idx_transaction_gtin']
   }
-  
+
   Note: '''
     # Transaction
-    Movement of goods or value in the supply chain.
-    
-    ## GS1 Alignment
-    - `type` values aligned with EPCIS event types
-    - `product_gtin` for GS1 product identification
-    - `disposition` uses GS1 CBV vocabulary
-    
-    ## Denormalization
-    Product and batch info embedded for simpler exchange.
-    For complex product catalogs, use metadata or a separate exchange profile.
+    All supply chain activities: harvest, receive, aggregate, process,
+    store, transfer, sale, export, import.
+
+    When type=process, create a LotLineage record to link
+    input and output lots.
   '''
 }
 
 // ============================================================================
-// TABLE 5: CLAIM
+// TABLE 7: LOT_LINEAGE
+// ============================================================================
+// Transformation records between lots.
+// Maps to: New (EUDR chain-of-custody requirement)
+// ============================================================================
+
+Table lot_lineage [headercolor: #E8832A] {
+  lineage_id uuid [pk, default: `gen_random_uuid()`, note: 'Unique identifier']
+
+  event_id      uuid [ref: > transaction.transaction_id, not null, note: 'Transformation Transaction']
+  input_lot_id  uuid [ref: > lot.lot_id, not null, note: 'Source lot consumed']
+  output_lot_id uuid [ref: > lot.lot_id, not null, note: 'Produced lot']
+
+  input_qty  decimal(18,4) [not null, note: 'Quantity consumed from input lot']
+  output_qty decimal(18,4) [not null, note: 'Quantity produced in output lot']
+
+  transformation_type transformation_type [not null, note: 'Type of transformation']
+  conversion_factor   decimal(10,6)       [note: 'Yield ratio (output_qty / input_qty)']
+
+  metadata jsonb [note: 'Extensible key-value pairs']
+
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    event_id      [name: 'idx_lineage_event']
+    input_lot_id  [name: 'idx_lineage_input_lot']
+    output_lot_id [name: 'idx_lineage_output_lot']
+    (event_id, input_lot_id)  [name: 'idx_lineage_event_input']
+    (event_id, output_lot_id) [name: 'idx_lineage_event_output']
+  }
+
+  Note: '''
+    # LotLineage
+    Tracks all transformations between lots.
+
+    ## Validation
+    For all records sharing event_id: sum(input_qty) >= sum(output_qty)
+    Material loss allowed (drying, hulling). Yield gain not permitted.
+
+    ## Patterns
+    Split:  1 input row  + N output rows (same event_id)
+    Merge:  N input rows + 1 output row  (same event_id)
+    1-to-1: 1 input row  + 1 output row  (same event_id)
+  '''
+}
+
+// ============================================================================
+// TABLE 8: CLAIM
 // ============================================================================
 // A statement, assertion, or measurement about any entity.
 // Maps to: V1 Attributes + Observations + partial Activities
-// This is the primary mechanism for capturing certifications, compliance,
-// sustainability metrics, and other assertions.
 // ============================================================================
 
 Table claim [headercolor: #1E69FD] {
-  // Primary key
-  id uuid [pk, default: `gen_random_uuid()`, note: 'Unique identifier']
-  
-  // Claim classification
-  type claim_type [not null, note: 'Type of claim being made']
-  
-  // Subject - what this claim is about
+  claim_id uuid [pk, default: `gen_random_uuid()`, note: 'Unique identifier']
+
+  type         claim_type   [not null, note: 'Type of claim being made']
   subject_type subject_type [not null, note: 'Entity type this claim refers to']
-  subject_id uuid [not null, note: 'ID of the entity this claim is about']
-  
-  // Claim content
-  key varchar(100) [not null, note: 'Claim identifier/name (e.g., "organic_certified", "deforestation_risk")']
-  value text [note: 'Claim value - interpretation depends on value_type']
-  value_type value_type [default: 'string', note: 'Data type of the value field']
-  unit varchar(50) [note: 'Unit of measurement (for numeric values)']
-  category varchar(100) [note: 'Logical grouping of claims (e.g., "environmental", "social")']
-  
-  // Claim status and confidence
-  status claim_status [default: 'pending', note: 'Current verification status']
-  confidence_score decimal(3,2) [note: 'Confidence level 0.00-1.00 (e.g., 0.95 = 95% confident)']
-  
-  // Temporal information
-  claim_date date [note: 'Date the claim applies to or was observed']
-  valid_from date [note: 'Start of validity period']
-  valid_until date [note: 'End of validity period (for time-bound claims like certifications)']
-  
-  // Source tracking
-  source varchar(200) [note: 'Origin of the claim (organization, system, person)']
-  source_type varchar(50) [note: 'Type of source (auditor, satellite, self-reported, etc.)']
-  
-  // Extensibility
-  metadata jsonb [note: 'Extensible key-value pairs for profile-specific fields']
-  
-  // Audit fields
-  created_at timestamp [not null, default: `now()`, note: 'Record creation time']
-  updated_at timestamp [note: 'Last modification time']
+  subject_id   uuid         [not null, note: 'ID of the entity this claim is about']
+
+  key        varchar(100) [not null, note: 'Claim identifier (e.g., organic_certified, deforestation_risk)']
+  value      text         [note: 'Claim value — interpretation depends on value_type']
+  value_type value_type   [default: 'string', note: 'Data type of the value field']
+  unit       varchar(50)  [note: 'Unit of measurement (for numeric values)']
+  category   varchar(100) [note: 'Logical grouping (e.g., environmental, social)']
+
+  status           claim_status  [default: 'pending', note: 'Current verification status']
+  confidence_score decimal(3,2)  [note: 'Confidence level 0.00–1.00']
+
+  claim_date  date [note: 'Date the claim applies to or was observed']
+  valid_from  date [note: 'Start of validity period']
+  valid_until date [note: 'End of validity period (for time-bound claims)']
+
+  source      varchar(200) [note: 'Origin of the claim (organization, system, person)']
+  source_type varchar(50)  [note: 'Type of source (auditor, satellite, self-reported, etc.)']
+
+  metadata jsonb [note: 'Extensible key-value pairs']
+
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp
 
   indexes {
     type [name: 'idx_claim_type']
@@ -456,85 +561,62 @@ Table claim [headercolor: #1E69FD] {
     valid_until [name: 'idx_claim_valid_until']
     (subject_id, key, claim_date) [name: 'idx_claim_subject_key_date']
   }
-  
+
   Note: '''
     # Claim
     Assertions about any entity in the system.
-    
+
     ## Use Cases
-    - Certifications: key="rainforest_alliance", valid_from/valid_until
-    - EUDR compliance: key="deforestation_free", status=verified
-    - Sustainability: key="water_usage", value="1200", unit="liters/kg"
-    - Survey responses: key="farmer_income", value="2500", category="livelihoods"
-    
-    ## Subject Types
-    Claims can be about sites, actors, transactions, or other claims.
-    Use subject_type + subject_id to reference the target.
+    - Certifications: key=rainforest_alliance, valid_from/valid_until
+    - EUDR: type=deforestation_free, subject_type=lot, status=verified
+    - Sustainability: key=water_usage, value=1200, unit=liters/kg
+    - Survey: key=farmer_income, value=2500, category=livelihoods
   '''
 }
 
 // ============================================================================
-// TABLE 6: EVIDENCE
+// TABLE 9: EVIDENCE
 // ============================================================================
 // Data, documents, or references that support a claim.
 // Maps to: V1 DataSource + Observations + AuditAttributesObservations
 // ============================================================================
 
 Table evidence [headercolor: #1E69FD] {
-  // Primary key
-  id uuid [pk, default: `gen_random_uuid()`, note: 'Unique identifier']
-  
-  // Link to claim
-  claim_id uuid [ref: > claim.id, not null, note: 'The claim this evidence supports']
-  
-  // Evidence classification
-  type evidence_type [not null, note: 'Type of evidence provided']
-  
-  // Source information
-  source_name varchar(200) [not null, note: 'Name of the evidence source (e.g., "SGS Audit Report 2024")']
-  source_provider varchar(200) [note: 'Organization providing the evidence (e.g., "SGS", "Planet Labs")']
-  description text [note: 'Human-readable description of the evidence']
-  
-  // External reference
-  url text [note: 'Link to external evidence (document, API, etc.)']
-  file_hash varchar(64) [note: 'SHA-256 hash of file for integrity verification']
-  
-  // Confidence
-  confidence_score decimal(3,2) [note: 'Confidence level 0.00-1.00 for this specific evidence']
-  
-  // Dates
+  evidence_id uuid [pk, default: `gen_random_uuid()`, note: 'Unique identifier']
+
+  claim_id uuid [ref: > claim.claim_id, not null, note: 'The claim this evidence supports']
+
+  type            evidence_type [not null, note: 'Type of evidence provided']
+  source_name     varchar(200)  [not null, note: 'Name of the evidence source']
+  source_provider varchar(200)  [note: 'Organization providing the evidence']
+  description     text          [note: 'Human-readable description']
+
+  url       text        [note: 'Link to external evidence (document, API, etc.)']
+  file_hash varchar(64) [note: 'SHA-256 hash for integrity verification']
+
+  confidence_score decimal(3,2) [note: 'Confidence level 0.00–1.00']
+
   observation_date date [note: 'When the evidence was collected or observed']
-  submission_date date [note: 'When the evidence was submitted to the system']
-  
-  // Structured observation data
-  observation_data jsonb [note: 'Structured observation content (e.g., survey answers, sensor readings)']
-  
-  // Extensibility
-  metadata jsonb [note: 'Extensible key-value pairs for profile-specific fields']
-  
-  // Audit fields
-  created_at timestamp [not null, default: `now()`, note: 'Record creation time']
-  updated_at timestamp [note: 'Last modification time']
+  submission_date  date [note: 'When the evidence was submitted to the system']
+
+  observation_data jsonb [note: 'Structured observation content (survey answers, sensor readings)']
+
+  metadata jsonb [note: 'Extensible key-value pairs']
+
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp
 
   indexes {
-    claim_id [name: 'idx_evidence_claim']
-    type [name: 'idx_evidence_type']
-    source_provider [name: 'idx_evidence_provider']
+    claim_id         [name: 'idx_evidence_claim']
+    type             [name: 'idx_evidence_type']
+    source_provider  [name: 'idx_evidence_provider']
     observation_date [name: 'idx_evidence_observation_date']
     (claim_id, type) [name: 'idx_evidence_claim_type']
   }
-  
+
   Note: '''
     # Evidence
-    Supporting data for claims.
-    
-    ## Evidence Types
-    - Documents: Audit reports, certificates, contracts
-    - Imagery: Photos, satellite analysis
-    - Data: Lab results, sensor readings, surveys
-    
-    ## Integrity
-    Use `file_hash` (SHA-256) to verify document integrity.
-    Store actual files externally and reference via `url`.
+    Supporting data for claims. Store actual files externally,
+    reference via url. Use file_hash (SHA-256) to verify integrity.
   '''
 }

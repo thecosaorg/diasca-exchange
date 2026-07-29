@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://diasca.org/schemas/v2/lot.json",
+  "title": "DIASCA Lot Entity",
+  "description": "Represents the traceable unit of product — the central traceability object.",
+  "type": "object",
+  "required": ["lot_id", "product_type", "origin_site_id", "quantity", "unit", "owner_enterprise_id", "created_at", "created_by_system"],
+  "properties": {
+    "lot_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "product_type": {
+      "type": "string",
+      "enum": ["raw_cherry", "parchment", "green_coffee", "roasted_coffee", "cocoa_fresh", "cocoa_dried", "cocoa_processed", "other"]
+    },
+    "origin_site_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Origin plot site ID"
+    },
+    "harvest_date": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+    "harvest_date_end": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+    "quantity": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "unit": {
+      "type": "string",
+      "enum": ["kg", "mt", "bags", "liters"]
+    },
+    "owner_enterprise_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Current custodian/owner Enterprise ID"
+    },
+    "batch_number": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "disposition": {
+      "type": ["string", "null"],
+      "maxLength": 50,
+      "description": "GS1 CBV disposition state (e.g. active, in_progress, quarantined)"
+    },
+    "metadata": {
+      "type": ["object", "null"],
+      "additionalProperties": true
+    },
+    "created_by_system": {
+      "type": "string"
+    },
+    "created_by_actor": {
+      "type": ["string", "null"]
+    },
+    "source_system": {
+      "type": ["string", "null"]
+    },
+    "authority_type": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "consumed", "split", "merged", "quarantined", "archived"],
+      "default": "active"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

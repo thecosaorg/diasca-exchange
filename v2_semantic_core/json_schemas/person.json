@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://diasca.org/schemas/v2/person.json",
+  "title": "DIASCA Person Entity",
+  "description": "Represents an individual actor participating in the agricultural supply chain.",
+  "type": "object",
+  "required": ["person_id", "name", "role", "created_at", "created_by_system"],
+  "properties": {
+    "person_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the person"
+    },
+    "name": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Full legal or display name"
+    },
+    "role": {
+      "type": "string",
+      "enum": ["farmer", "field_agent", "auditor", "inspector", "producer", "buyer", "certifier"],
+      "description": "Primary role of the person in the supply chain"
+    },
+    "email": {
+      "type": ["string", "null"],
+      "format": "email",
+      "maxLength": 255,
+      "description": "Contact email address"
+    },
+    "phone": {
+      "type": ["string", "null"],
+      "maxLength": 50,
+      "description": "Contact telephone number"
+    },
+    "linked_enterprise_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Primary organization or cooperative ID"
+    },
+    "metadata": {
+      "type": ["object", "null"],
+      "additionalProperties": true,
+      "description": "Extensible key-value metadata"
+    },
+    "created_by_system": {
+      "type": "string",
+      "description": "Identifier of the system that created this record"
+    },
+    "created_by_actor": {
+      "type": ["string", "null"],
+      "description": "Identifier of the user/actor who initiated creation"
+    },
+    "source_system": {
+      "type": ["string", "null"],
+      "description": "System providing original source data"
+    },
+    "authority_type": {
+      "type": ["string", "null"],
+      "enum": ["self_reported", "cooperative_registry", "government_registry", "third_party_auditor", "external_provider"],
+      "description": "Authority level of the entity record"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "inactive", "pending_verification", "archived"],
+      "default": "active"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Record creation timestamp"
+    },
+    "updated_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Record update timestamp"
+    }
+  },
+  "additionalProperties": false
+}

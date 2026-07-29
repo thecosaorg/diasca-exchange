@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://diasca.org/schemas/v2/site.json",
+  "title": "DIASCA Site Entity",
+  "description": "Represents a physical location in the supply chain (plot, farm, facility, warehouse, port).",
+  "type": "object",
+  "required": ["site_id", "name", "type", "created_at", "created_by_system"],
+  "properties": {
+    "site_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique site identifier"
+    },
+    "name": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Human-readable site name"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["plot", "farm", "factory", "warehouse", "processing_facility", "distribution_center", "office", "port"],
+      "description": "Site classification"
+    },
+    "parent_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Hierarchical parent site ID"
+    },
+    "owner_person_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Person owner/operator ID"
+    },
+    "owner_enterprise_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Enterprise owner/operator ID"
+    },
+    "address": {
+      "type": ["string", "null"],
+      "description": "Physical/postal address"
+    },
+    "latitude": {
+      "type": ["number", "null"],
+      "minimum": -90,
+      "maximum": 90,
+      "description": "GPS latitude (-90 to 90)"
+    },
+    "longitude": {
+      "type": ["number", "null"],
+      "minimum": -180,
+      "maximum": 180,
+      "description": "GPS longitude (-180 to 180)"
+    },
+    "altitude": {
+      "type": ["number", "null"],
+      "description": "Elevation in meters"
+    },
+    "geometry": {
+      "type": ["object", "null"],
+      "description": "GeoJSON Geometry object for plot polygon or point"
+    },
+    "size": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "description": "Area size"
+    },
+    "size_unit": {
+      "type": "string",
+      "default": "hectares",
+      "description": "Unit of area measurement"
+    },
+    "country": {
+      "type": ["string", "null"],
+      "pattern": "^[A-Z]{2}$",
+      "description": "ISO 3166-1 alpha-2 country code"
+    },
+    "region": {
+      "type": ["string", "null"],
+      "maxLength": 100,
+      "description": "Subnational administrative region"
+    },
+    "is_headquarters": {
+      "type": "boolean",
+      "default": false
+    },
+    "metadata": {
+      "type": ["object", "null"],
+      "additionalProperties": true
+    },
+    "created_by_system": {
+      "type": "string"
+    },
+    "created_by_actor": {
+      "type": ["string", "null"]
+    },
+    "source_system": {
+      "type": ["string", "null"]
+    },
+    "authority_type": {
+      "type": ["string", "null"],
+      "enum": ["self_reported", "cooperative_registry", "government_registry", "third_party_auditor", "external_provider"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "inactive", "pending_verification", "archived"],
+      "default": "active"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

@@ -58,6 +58,7 @@ pytest_cache/
 # OS generated files
 Thumbs.db
 ehthumbs.db
+.directory
 
 # GeoJSON validator build (if any)
 geojson-validator/build/
